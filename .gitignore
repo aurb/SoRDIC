@@ -1,0 +1,20 @@
+# Ignore files with no extension
+*
+!*.*
+!*/
+!Makefile
+!COPYING
+!VERSION
+# Rest of ignores
+*.ast
+*.bc
+*.exe
+*.o
+*.obj
+*.txt
+*.json
+*.dll
+*.lib
+*.so
+*.plist
+.vscode
