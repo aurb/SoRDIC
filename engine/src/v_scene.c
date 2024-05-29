@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 #include "engine_types.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 #include "v_geometry.h"
 #include "v_obj_3d_container.h"
 

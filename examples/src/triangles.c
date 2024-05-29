@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 #include "engine.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 
 #define MOVE_LEFT_KEY 'a'
 #define MOVE_RIGHT_KEY 'd'
@@ -141,8 +141,8 @@ int main(int argc, char *argv[])
         #endif
     }
 
-    printf("\n%lu polygons_per_second\n", (uint64_t)(polygon_cnt / display_run_stats().time));
-    printf("%lu pixels_per_second\n", (uint64_t)(pixel_cnt / display_run_stats().time));
+    printf("\n%lu polygons_per_second\n", (uint64_t)(polygon_cnt / engine_run_stats().time));
+    printf("%lu pixels_per_second\n", (uint64_t)(pixel_cnt / engine_run_stats().time));
 
     engine_cleanup();
     return 0;

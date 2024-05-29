@@ -1,18 +1,23 @@
 # SoRDIC
 
-**Software Rendered Demo Engine In C v0.5**
+**Software Rendering Demo Engine In C v0.51**
+
 https://github.com/aurb/SoRDIC
+
 Copyright (C) 2024 https://github.com/aurb
+Copyright (C) 2019 Sascha Ende
 
 ## Introduction
 
-SoRDIC is a creative coding framework. It provides an engine for software-only real-time graphics generation. It has been implemented in pure C99 to provide cross-platform cross-compilation capabilities. Portability was achieved by, among other things, giving up any means of hardware acceleration of graphics. Currently, to access the host platform, SoRDIC uses libsdl2, however, swapping to another platform interface should be possible.
+SoRDIC is a creative coding framework. It provides an engine for software-only real-time graphics generation. It has been implemented in pure C99 to provide cross-platform, cross-compilation capabilities. Portability was achieved by, among other things, giving up any means of hardware acceleration of graphics. Currently, to access the host platform, SoRDIC uses libsdl2, however, swapping to another platform backend should be feasible.
 
-The target application of SoRDIC is real-time graphical presentations and animations. It was created for use on demoscene, but creating simple games should also be possible. The library comes with a set of examples showing how to use it.
+The target application of SoRDIC is real-time graphical presentations and animations. SoRDIC was created for use on the demoscene. Development of simple games should also be possible. The library comes with a set of examples showing how to use it.
 
 ## Quick HowTo
 
-Inside project root directory call:
+First follow [Build dependencies](#Build dependencies) section.
+
+Then inside the project root directory build everything with the call:
 
 `make all`
 
@@ -24,11 +29,15 @@ Built examples will be put into `examples` subdirectory. To consecutively run th
 
 - Display interface
 - Keyboard handling
+- Music playback support
+- Music annotation engine (for animation synchronisation)
 - Multiple rendering buffer targets with Z buffer support
 - Rendering buffers layering
     - Addition
     - Masking
     - Per-pixel alpha blending
+- Color calculation/conversion functions
+- Universal 1D transition curve functions (linear/square/cube/sin)
 - Ability to use image files as texture maps and/or height/bump maps
 - 3D graphics
     - Geometry transformations with object hierarchy
@@ -66,15 +75,19 @@ Built examples will be put into `examples` subdirectory. To consecutively run th
         - Toroids
         - Cycloids (up to 3 harmonics)
 - Interface for direct line/polygon drawing
-- Pattern drawing
+- Procedural 2D maps generators
     - Sine pattern with user-defined gradient (demoscene "plasma")
 
 ## Current status
 
-Currently it is just my toy project.  Much of the intended functionality has been brought to a fairly satisfactory state, making SoRDIC somewhat usable. However, other functionalities are still in the planning stages. The most important of these are:
-- Support for sound.
-- Support for objects and entire scenes/animations from 3D modelers (Blender, etc.).
-- A dedicated demo editor with support for synchronization with sound.
+Currently it is just my toy project. Much of the intended functionality has been brought to a fairly satisfactory state, making SoRDIC somewhat usable. However, other functionalities are still in the planning stages. The most important of these are:
+- Support for objects and entire scenes/animations from the 3D modelers (Blender, etc.).
+- A dedicated demo editor with a support for the sound annotations.
+- New procedural map generators.
+- New/fancy 3D object rendering/rasterization algorithms.
+- Separation of the T&L and rasterization stages into the separate threads. Possibly with further paralellization of both.
+- Improvements of map/rendering buffer layering logic.
+- 2D filters (blurs, color manipulation, etc.) to apply on maps.
 
 ## Project structure
 
@@ -85,7 +98,7 @@ Currently it is just my toy project.  Much of the intended functionality has bee
     |   +-- obj      Library compilation object output
     |   +-- src      Library source files
     +-- examples     Examples code and executables
-        +-- assets   Texture maps used by examples
+        +-- assets   Texture maps, music and music annotations used by examples
         +-- clang    Clang-specific results (used by static analysis targets)
         +-- src      Examples source files
     Makefile         Makefile with all the build/analysis targets in it.
@@ -97,7 +110,7 @@ To build SoRDIC you need gcc, make and libsdl2.
 
 Install dependencies with:
 
-`sudo apt-get install -y build-essential libsdl2-2.0-0 libsdl2-doc libsdl2-dev libsdl2-image-2.0-0 libsdl2-image-dev`
+`sudo apt-get install -y build-essential libsdl2-2.0-0 libsdl2-doc libsdl2-dev libsdl2-image-2.0-0 libsdl2-image-dev libsdl2-mixer-dev`
 
 Compilation with clang is also supported. Change variable CC inside Makefile to enable it (if you find it useful).
 
@@ -175,7 +188,10 @@ Static analysis for cross translation units.
 
 ## License
 
-Software Rendered Demo Engine In C
+### Source code, graphics assets, music annotations
+
+**Software Rendered Demo Engine In C**
+
 Copyright (C) 2024 https://github.com/aurb
 
 This program is free software: you can redistribute it and/or modify
@@ -190,3 +206,14 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
+
+### Music assets
+
+**Tranceverse**
+
+Copyright (C) 2019 Sascha Ende
+
+CC BY 4.0
+
+https://creativecommons.org/licenses/by/4.0/legalcode
+

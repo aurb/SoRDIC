@@ -21,7 +21,10 @@
 
 OBJ_3D_CONTAINER *obj_3d_container(OBJ_3D *obj, INT max_children);
 void obj_3d_container_free(OBJ_3D_CONTAINER *cont);
-void obj_3d_container_set_transform(OBJ_3D_CONTAINER *cont, FLOAT ax, FLOAT ay, FLOAT az, FLOAT px, FLOAT py, FLOAT pz);
+void obj_3d_container_set_transform(OBJ_3D_CONTAINER *cont,
+                                    FLOAT ax, FLOAT ay, FLOAT az,
+                                    FLOAT px, FLOAT py, FLOAT pz,
+                                    FLOAT sx, FLOAT sy, FLOAT sz);
 void obj_3d_container_calc_matrices(OBJ_3D_CONTAINER *cont);
 void obj_3d_container_transform_geometry(OBJ_3D_CONTAINER *cont, MAT_4_4 *camera_space, MAT_4_4 *projection_space, INT scr_w, INT scr_h);
 void obj_3d_container_apply_light(OBJ_3D_CONTAINER *cont);

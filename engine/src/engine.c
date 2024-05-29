@@ -17,9 +17,11 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "engine.h"
-#include "v_renderer.h"
+#include "display.h"
+#include "v_rasterizer.h"
 
 typedef struct {
     INT timestamp;
@@ -31,6 +33,11 @@ KEY_PRESS key_presses[10];
 //Array storing events to emit on each call to engine_poll_events
 EVENT events[10];
 INT events_count = 0; //number of used cells in "events"
+int total_ticks = 0;
+int music_start_ticks = 0;
+extern int total_frames;
+
+Mix_Music* engine_music = NULL;
 
 //Internal functions forward declarations
 void init_keyboard_handler();
@@ -47,16 +54,55 @@ KEY_CODE decode_key_sym(SDL_Keycode keycode);
 INT engine_init(INT window_width, INT window_height, INT window_flags, const char *window_name) {
     /** Display render buffer has Z buffer enabled by default. */
     display_init(window_width, window_height, window_flags, window_name);
+    if (MIX_INIT_MP3 != Mix_Init(MIX_INIT_MP3)) {
+        printf("Error Mix_Init: %s.\n", Mix_GetError());
+        return 1;
+    }
+    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        printf("Error Mix_OpenAudio: %s\n", Mix_GetError() );
+        return 1;
+    }
     init_keyboard_handler();
     /** Init 3d rendering */
     vr_init();
+
+    total_ticks = SDL_GetTicks();
     return 0;
 }
 
-INT engine_cleanup() {
-    vr_cleanup();
-    display_cleanup();
+RUN_STATS engine_run_stats() {
+    RUN_STATS a = {
+        .frames = total_frames,
+        .time = (SDL_GetTicks() - total_ticks) / 1000.0,
+        .music_position = (SDL_GetTicks() - music_start_ticks) / 1000.0
+    };
+    return a;
+}
+
+INT engine_load_music(const char *music_filename) {
+    engine_music = Mix_LoadMUS(music_filename);
+    if( engine_music == NULL ) {
+        printf("Error loading music file %s. Mix_LoadMUS: %s\n", music_filename, Mix_GetError());
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+INT engine_play_music() {
+    Mix_PlayMusic(engine_music, 1);
+    music_start_ticks = SDL_GetTicks();
     return 0;
+}
+
+INT engine_playing() {
+    return Mix_PlayingMusic();
+}
+
+INT engine_set_music_position(FLOAT t) {
+    music_start_ticks = SDL_GetTicks() - (int)(t*1000);
+    return Mix_SetMusicPosition(t);
 }
 
 EVENT* engine_poll_events() {
@@ -93,6 +139,15 @@ EVENT* engine_poll_events() {
     finalize_events();
 
     return events;
+}
+
+INT engine_cleanup() {
+    vr_cleanup();
+    Mix_FreeMusic(engine_music);
+    engine_music = NULL;
+    Mix_Quit();
+    display_cleanup();
+    return 0;
 }
 
 //Internal functions

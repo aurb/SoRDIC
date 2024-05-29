@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "engine_types.h"
+#include "engine.h"
 #include "display.h"
 #include "render_buffer.h"
 
@@ -30,7 +31,6 @@ SDL_Renderer *display_renderer;
 SDL_Texture *display_texture;
 RENDER_BUFFER *display_buf;
 
-int total_ticks;
 int total_frames;
 double prev_frame_interval; //powiązane z display_last_frame_interval. rozważyć jak można zmodyfikować example_cube, _lights, _hierarchy, żeby nie było potrzebne
 int prev_frame_ticks;
@@ -40,7 +40,7 @@ int interval_frames;
 
 int display_init(int window_width, int window_height, int window_flags, const char *window_name) {
     SDL_DisplayMode disp_mode;
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
     if (window_flags & FULLSCREEN_CURRENT_MODE) {
         display_window = SDL_CreateWindow(window_name,
@@ -70,9 +70,8 @@ int display_init(int window_width, int window_height, int window_flags, const ch
     }
 
     total_frames = 0;
-    total_ticks = SDL_GetTicks();
-    interval_time = display_run_stats().time;
-    interval_frames = display_run_stats().frames;
+    interval_time = engine_run_stats().time;
+    interval_frames = engine_run_stats().frames;
 
     prev_frame_interval = 0.0;
     prev_frame_ticks = SDL_GetTicks();
@@ -80,7 +79,7 @@ int display_init(int window_width, int window_height, int window_flags, const ch
 }
 
 void display_show(const int delay) {
-    SDL_UpdateTexture(display_texture, NULL, (RGB_PIXEL*)display_buf->p, display_buf->width * sizeof(RGB_PIXEL));
+    SDL_UpdateTexture(display_texture, NULL, (RGB_PIXEL*)display_buf->rgb->data, display_buf->width * sizeof(RGB_PIXEL));
     SDL_RenderCopy(display_renderer, display_texture, NULL, NULL);
     SDL_RenderPresent(display_renderer);
     SDL_Delay(delay);
@@ -107,21 +106,13 @@ double display_last_frame_interval() {
     return prev_frame_interval;
 }
 
-RUN_STATS display_run_stats() {
-    RUN_STATS a = {
-        .frames = total_frames,
-        .time = (SDL_GetTicks() - total_ticks) / 1000.0
-    };
-    return a;
-}
-
 void periodic_fps_printf(double period) {
-    if ((display_run_stats().time - interval_time) > period) {
-        int cur_frames = display_run_stats().frames - interval_frames;
-        double cur_time = display_run_stats().time - interval_time;
+    if ((engine_run_stats().time - interval_time) > period) {
+        int cur_frames = engine_run_stats().frames - interval_frames;
+        double cur_time = engine_run_stats().time - interval_time;
         printf("FPS: %d    \r", (int)(cur_frames / cur_time));
         fflush(stdout);
-        interval_time = display_run_stats().time;
-        interval_frames = display_run_stats().frames;
+        interval_time = engine_run_stats().time;
+        interval_frames = engine_run_stats().frames;
     }
 }

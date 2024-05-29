@@ -18,14 +18,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "engine.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 #include "v_geometry.h"
 #include "v_obj_3d.h"
 #include "v_obj_3d_container.h"
 #include "v_obj_3d_generators.h"
 #include "v_lighting.h"
 #include "v_scene.h"
-#include "assets_2d.h"
+#include "maps.h"
 
 #define TOROID_1_KEY '1'
 #define TOROID_2_KEY '2'
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     const int V2_COUNT = 60;
     const int OBJECTS_COUNT = 7;
     OBJ_3D *objects[OBJECTS_COUNT];
-    MAP *wood_map = NULL, *height_map = NULL, *mountains_map = NULL, *specular_map = NULL;
+    RGB_MAP *wood_map = NULL, *height_map = NULL, *mountains_map = NULL, *specular_map = NULL;
     BUMP_MAP *bump_map = NULL;
     SCENE_3D *scene = NULL;
     OBJ_3D_CONTAINER *container = NULL;
@@ -238,9 +238,8 @@ int main(int argc, char *argv[])
             a_x + omega_x*rotation_t,
             a_y + omega_y*rotation_t,
             a_z + omega_z*rotation_t,
-            p_x + c_x,
-            p_y + c_y,
-            p_z);
+            p_x + c_x, p_y + c_y, p_z,
+            1.0, 1.0, 1.0);
 
         // Execute a lighting calculation and rendering for the whole scene
         scene_3d_transform_and_light(scene);
@@ -394,7 +393,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < OBJECTS_COUNT; i++) {
         obj_3d_free(objects[i]);
     }
-    map_free(wood_map);    map_free(mountains_map);    map_free(specular_map);
+    rgb_map_free(wood_map);    rgb_map_free(mountains_map);    rgb_map_free(specular_map);
     bump_map_free(bump_map);
     engine_cleanup();
     return 0;

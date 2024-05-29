@@ -32,15 +32,17 @@ EXAMPLES_AST := $(EXAMPLES_SRC:$(EXAMPLES)/$(SRC)/%.c=$(EXAMPLES)/$(CLANG)/%.ast
 
 CC = gcc
 # Build examples to render on window with dimensions (DISPLAY_W, DISPLAY_H)
-EXAMPLES_FLAGS := -DDISPLAY_W=1200 -DDISPLAY_H=900
+CUSTOM_FLAGS := -DDISPLAY_W=1200 -DDISPLAY_H=900
 # Build examples to render on full screen with current(desktop) resolution
-#EXAMPLES_FLAGS := -DFULL_DESKTOP=1
+#CUSTOM_FLAGS := -DFULL_DESKTOP=1
+# Build engine to log music annotations
+#CUSTOM_FLAGS += -DLOG_ANNOTATIONS
 
-CFLAGS := -std=c99 -I$(ENGINE)/$(INC) $(EXAMPLES_FLAGS) -Wall -Wformat -Werror=format-security #Universal compilation flags
+CFLAGS := -std=c99 -I$(ENGINE)/$(INC) $(CUSTOM_FLAGS) -Wall -Wformat -Werror=format-security #Universal compilation flags
 DEBUG_FLAGS := -O0 -g
 RELEASE_FLAGS := -O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -DNDEBUG
 LDFLAGS := 
-LDLIBS := -lm -lSDL2 -lSDL2main -lSDL2_image
+LDLIBS := -lm -lSDL2 -lSDL2main -lSDL2_image -lSDL2_mixer
 .PHONY: clean dirs release debug run scan-build llvm-build ast-build database ctu-index all
 all: dirs clean release
 release:: CFLAGS += $(RELEASE_FLAGS)

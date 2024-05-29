@@ -38,7 +38,7 @@ VEC_4 *norm_v(VEC_4 *a);
 VEC_4 *mul_mv(MAT_4_4 *a, VEC_4 *b);
 MAT_4_4 *mul_mm(MAT_4_4 *a, MAT_4_4 *b);
 MAT_4_4 *scale_m(FLOAT scale_x, FLOAT scale_y, FLOAT scale_z);
-MAT_4_4 *transform_m(FLOAT ang_x, FLOAT ang_y, FLOAT ang_z, FLOAT dx, FLOAT dy, FLOAT dz);
+MAT_4_4 *transform_m(FLOAT ang_x, FLOAT ang_y, FLOAT ang_z, FLOAT dx, FLOAT dy, FLOAT dz, FLOAT sx, FLOAT sy, FLOAT sz);
 MAT_4_4 *camera_m(VEC_4 *AT, VEC_4 *EYE, FLOAT roll);
 MAT_4_4 *projection_m(FLOAT fov, FLOAT w, FLOAT h, FLOAT n, FLOAT f);
 

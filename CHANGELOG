@@ -1,0 +1,10 @@
+From v0.5 to v0.51
+- Music playback support.
+- Music annotations engine. It reads annotations from the external CSV file and tracks them during animation.
+- Music annotation example. Shows how to code animation with music playback and annotation synchronisation.
+- Fixed normals corruption problem when scaling individual 3D objects.
+- Added universal 1D transitions functions (line/square/cube/sin).
+- RGB color blending function.
+- Introduced Z_MAP.
+- Modified RENDER_BUFFER to use RGB_MAP/Z_MAP instead of the dedicated buffers.
+- Support for masking/blending/adding RGB_MAP (previously it was available only for RENDER_BUFFER).

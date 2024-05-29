@@ -22,6 +22,7 @@
 OBJ_3D *obj_3d(INT vcnt, INT fcnt);
 OBJ_3D *obj_3d_copy(OBJ_3D *src);
 void obj_3d_free(OBJ_3D *obj);
+void obj_3d_set_surface_color(OBJ_3D *obj, VEC_3 *color);
 void obj_3d_set_properties(OBJ_3D *obj, OBJ_3D *props);
 void obj_3d_init_geometry(OBJ_3D *obj);
 

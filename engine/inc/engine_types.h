@@ -38,6 +38,12 @@ typedef uint32_t BUMP_PIXEL;
 #define PI_2 (1.570796327)
 #define PI_4 (0.785398163)
 
+typedef struct {
+    int frames;
+    double time;
+    double music_position;
+} RUN_STATS;
+
 /** Types for object generators*/
 typedef enum {
     TETRAHEDRON,
@@ -192,22 +198,34 @@ typedef FLOAT MAT_4_4[4][4]; //Transform matrix type for transforming 3D coordin
 typedef INT PROJECTION_COORD[3];
 
 typedef struct {
-    RGB_PIXEL *map;
+    RGB_PIXEL *data;
     INT width, height, height_with_margin;
-} MAP;
+} RGB_MAP;
 
 typedef struct {
-    BUMP_PIXEL *map;
+    Z_PIXEL *data;
+    INT width, height;
+} Z_MAP;
+
+typedef struct {
+    BUMP_PIXEL *data;
     INT width, height;
     FLOAT margin; //margin of reflection map to use as extra space for bump reflections
 } BUMP_MAP;
 
 typedef struct {
-    INT width;
-    INT height;
-    RGB_PIXEL *p; //pixels buffer
-    Z_PIXEL *z; //z buffer
+    RGB_MAP *rgb; //pixels buffer
+    Z_MAP *z; //z buffer
+    INT width, height;
 } RENDER_BUFFER;
+
+typedef struct {
+    RGB_PIXEL *gradient;
+    INT gradient_size;
+    INT *sin1, *sin2_x, *sin2_y; //sine tables
+    INT sin_size; //size of each sine table
+    INT xo, yo;
+} PLASMA_DATA;
 
 typedef struct {
     FLOAT u;
@@ -270,11 +288,11 @@ typedef struct {
     //The color of the whole object. This can be overloaded by FACE.color or VERTEX.color
     VEC_3 surface_color;
     VEC_3 wireframe_color;
-    MAP *base_map;
+    RGB_MAP *base_map;
     BUMP_MAP *bump_map;
-    MAP *mul_map;
-    MAP *add_map;
-    MAP *reflection_map;
+    RGB_MAP *mul_map;
+    RGB_MAP *add_map;
+    RGB_MAP *reflection_map;
 } OBJ_3D;
 
 typedef struct {
@@ -301,7 +319,9 @@ typedef struct OBJ_3D_CONTAINER OBJ_3D_CONTAINER;
 struct OBJ_3D_CONTAINER {
     FLOAT ax, ay, az; // Object angle relative to parent object
     FLOAT px, py, pz; // Object position relative to parent object
-    MAT_4_4 matrix; // Transformation matrix from root space to camera space
+    FLOAT sx, sy, sz; // Object position relative to parent object
+    MAT_4_4 object_matrix; // Transformation matrix from root space to camera space for object
+    MAT_4_4 normals_matrix; // Transformation matrix from root space to camera space for normals
     OBJ_3D* obj; // Object geometrical/visual description
     bool obj_owned; //if true, then this container owns obj, and should free it when is itself freed
     INT child_cnt; // Children count

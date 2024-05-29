@@ -18,16 +18,10 @@
 #define SCREEN_SDL
 
 #include "engine_types.h"
-#include "display.h"
 #include "render_buffer.h"
 
 #define FULLSCREEN_SWITCH_MODE (1)
 #define FULLSCREEN_CURRENT_MODE (2)
-
-typedef struct {
-    int frames;
-    double time;
-} RUN_STATS;
 
 int display_init(int window_width, int window_height, int window_flags, const char *window_name);
 void display_show(const int delay);
@@ -35,7 +29,6 @@ RENDER_BUFFER *display_buffer();
 void display_cleanup();
 
 double display_last_frame_interval();
-RUN_STATS display_run_stats();
 void periodic_fps_printf(double period);
 
 #endif

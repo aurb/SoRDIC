@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 #include "engine.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 
 #define MOVE_LEFT_KEY 'a'
 #define MOVE_RIGHT_KEY 'd'

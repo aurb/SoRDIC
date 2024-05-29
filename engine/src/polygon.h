@@ -59,9 +59,9 @@
 
 #if USE_MAP_BASE
     #if USE_MAP_BUMP
-        BUMP_PIXEL *map_bs = mbase->map;
+        BUMP_PIXEL *map_bs = mbase->data;
     #else
-        RGB_PIXEL *map_bs = mbase->map;
+        RGB_PIXEL *map_bs = mbase->data;
     #endif
     INT ub, ub1, dub; //U texture map coordinate
     INT vb, vb1, dvb; //V texture map coordinate
@@ -73,16 +73,16 @@
         INT vr_shift;
     #endif
     #if USE_MAP_MUL
-        RGB_PIXEL *map_m = mmul->map;
+        RGB_PIXEL *map_m = mmul->data;
         RGB_PIXEL map_m_val;
         INT r, g, b;
     #endif
     #if USE_MAP_ADD
-        RGB_PIXEL *map_a = madd->map;
+        RGB_PIXEL *map_a = madd->data;
         RGB_PIXEL map_a_val;
     #endif
     #if USE_MAP_BUMP
-        RGB_PIXEL *map_r = mref->map; //reflection map
+        RGB_PIXEL *map_r = mref->data; //reflection map
         INT urc, vrc; //bump vector corrections read from map_bs[ub, vb]
         INT bu, bv; //bump vector along u and v axes
     #endif

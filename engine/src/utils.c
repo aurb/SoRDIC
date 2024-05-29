@@ -25,6 +25,13 @@ FLOAT utils_pix_2_L(RGB_PIXEL p) {
     return (FLOAT)((p&0x000000FF)+2*((p>>8)&0x000000FF)+((p>>16)&0x000000FF))/1024.;
 }
 
+VEC_3* utils_blend_RGB(VEC_3 *c, VEC_3 *a, VEC_3 *b, FLOAT p) {
+    for (INT i=0; i < 3; i++) {
+        (*c)[i] = (*a)[i]*p + (*b)[i]*(1-p);
+    }
+    return c;
+}
+
 #define FILE_PATH_MAX_LENGTH 256
 char call_path[FILE_PATH_MAX_LENGTH];
 

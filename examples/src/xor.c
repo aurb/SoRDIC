@@ -20,6 +20,7 @@
 #include <math.h>
 
 #include "engine.h"
+#include "maps.h"
 
 int main(int argc, char *argv[])
 {
@@ -42,7 +43,7 @@ int main(int argc, char *argv[])
         sc = (RGB_PIXEL)(127.5*sin(y*2.5*6.2832/(double)sine->height)+127.5);
         sc = (sc) | (sc<<8) | (sc<<16);
         for(x=0; x<sine->width; x++, offs++) {
-            (sine->p)[offs] = sc;
+            (sine->rgb->data)[offs] = sc;
         }
     }
 
@@ -51,9 +52,9 @@ int main(int argc, char *argv[])
             for(x=0; x<display_buffer()->width; x++, offs++)
             {
                 c = (((x+xoffs)&0xFF) ^ ((y+yoffs)&0xFF)) ^ (((x/2)&0xFF) ^ ((y/2)&0xFF));
-                (display_buffer()->p)[offs] = (c/8<<16) | (c/2<<8) | (c);
+                (display_buffer()->rgb->data)[offs] = (c/8<<16) | (c/2<<8) | (c);
             }
-        render_buffer_add_saturation(display_buffer(), sine);
+        rgb_map_sat_add(display_buffer()->rgb, sine->rgb);
         display_show(0);
         xoffs += 2;
         yoffs -= 1;

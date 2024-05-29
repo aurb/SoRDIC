@@ -22,10 +22,10 @@
 #include "v_obj_3d.h"
 #include "v_obj_3d_container.h"
 #include "v_obj_3d_generators.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 #include "v_lighting.h"
 #include "v_scene.h"
-#include "assets_2d.h"
+#include "maps.h"
 
 #define V1_COUNT (18*10)
 #define V2_COUNT (6*10)
@@ -102,9 +102,9 @@ int main(int argc, char *argv[])
     obj_3d_type = SOLID_DIFF_SPEC;
 
     //Place toroids in the space
-    obj_3d_container_set_transform(toroid_cont[0], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    obj_3d_container_set_transform(toroid_cont[1], 0.0, 0.0, 0.0, 0.0, 7.0, 0.0);
-    obj_3d_container_set_transform(toroid_cont[2], 0.0, 0.0, 0.0, 0.0, -7.0, 0.0);
+    obj_3d_container_set_transform(toroid_cont[0], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+    obj_3d_container_set_transform(toroid_cont[1], 0.0, 0.0, 0.0, 0.0, 7.0, 0.0, 1.0, 1.0, 1.0);
+    obj_3d_container_set_transform(toroid_cont[2], 0.0, 0.0, 0.0, 0.0, -7.0, 0.0, 1.0, 1.0, 1.0);
 
     //Initialize all renderable objects properties
     obj_3d_set_properties(light_markers[0]->obj, &(OBJ_3D){
@@ -137,15 +137,15 @@ int main(int argc, char *argv[])
         obj_3d_container_set_transform(lights[0], 0.0, 0.0, 0.0,
             8.0*sin((light_move_t/15.0 + 0.1)*2*PI),
             8.0*sin((light_move_t/17.0 + 0.333)*2*PI),
-            12.0);
+            12.0, 1.0, 1.0, 1.0);
         obj_3d_container_set_transform(lights[1], 0.0, 0.0, 0.0,
             8.0*sin((light_move_t/16.0 + 0.25)*2*PI),
             8.0*sin((light_move_t/13.0 + 0.0)*2*PI),
-            12.0);
+            12.0, 1.0, 1.0, 1.0);
         obj_3d_container_set_transform(lights[2], 0.0, 0.0, 0.0,
             8.0*sin((light_move_t/17.5 + 0.6)*2*PI),
             8.0*sin((light_move_t/20.0 + 0.4)*2*PI),
-            12.0);
+            12.0, 1.0, 1.0, 1.0);
 
         // Execute a lighting calculation and rendering for the whole scene
         scene_3d_transform_and_light(scene);

@@ -19,7 +19,7 @@
 #include <string.h>
 
 #include "engine_types.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 #include "v_geometry.h"
 
 //Internal functions forward declarations
@@ -72,6 +72,17 @@ void obj_3d_free(OBJ_3D *obj) {
     free(obj->vertices);
     free(obj->vertex_s);
     free(obj);
+}
+
+void obj_3d_set_surface_color(OBJ_3D *obj, VEC_3 *color) {
+    INT i = 0;
+    copy_v3(&obj->surface_color, color);
+    for (i = 0; i < obj->fcnt; i++) {
+        copy_v3(&obj->faces[i].color_surf, color);
+    }
+    for (i = 0; i < obj->vcnt; i++) {
+        copy_v3(&obj->vertices[i].color_surf, color);
+    }
 }
 
 /*

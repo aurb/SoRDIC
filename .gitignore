@@ -4,6 +4,7 @@
 !*/
 !Makefile
 !COPYING
+!CHANGELOG
 !VERSION
 # Rest of ignores
 *.ast

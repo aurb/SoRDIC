@@ -18,13 +18,13 @@
 #include <stdlib.h>
 #include <math.h>
 #include "engine.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 #include "v_geometry.h"
 #include "v_obj_3d.h"
 #include "v_obj_3d_container.h"
 #include "v_obj_3d_generators.h"
 #include "v_scene.h"
-#include "assets_2d.h"
+#include "maps.h"
 
 #define MASK_KEY 'q'
 #define DITHER_OPACITY_KEY 'w'
@@ -46,11 +46,12 @@ int main(int argc, char *argv[])
     FLOAT omega_x, omega_y, omega_z; // object angular velocities (constant)
     VEC_3 color_blue = {1.0, 0.5, 0.25};
     VEC_3 wire_color = {1.0, 1.0, 1.0};
-    MAP *wood_map = NULL, *red_light_map = NULL;
+    RGB_MAP *wood_map = NULL, *red_light_map = NULL;
     SCENE_3D *scene = NULL;
     const int LAYER_COUNT = 3;
     RENDER_BUFFER *render_layers[LAYER_COUNT];
     RENDER_BUFFER *mask_layer = NULL, *opacity_layer = NULL;
+    RGB_PIXEL *opacity_data = NULL;
     OBJ_3D_CONTAINER *container = NULL;
     DEMO_MODE mode = MASK;
 
@@ -70,25 +71,26 @@ int main(int argc, char *argv[])
         display_buffer()->width, display_buffer()->height, Z_BUFFER_OFF);
     opacity_layer = render_buffer(
         display_buffer()->width, display_buffer()->height, Z_BUFFER_OFF);
+    opacity_data = opacity_layer->rgb->data;
 
     INT x = 0, y = 0;
     int offs = 0;
     //generate vertical gradient for opacity rendering
     for (y = 0, offs = 0; y < opacity_layer->height; y++) {
         for (x = 0; x < 0.4*opacity_layer->width; x++, offs++) {
-            opacity_layer->p[offs] = 0;
+            opacity_data[offs] = 0;
         }
         for (; x < 0.6*opacity_layer->width; x++, offs++) {
-            opacity_layer->p[offs] = 256*(x-0.4*opacity_layer->width)/(0.2*opacity_layer->width);
+            opacity_data[offs] = 256*(x-0.4*opacity_layer->width)/(0.2*opacity_layer->width);
         }
         for (; x < opacity_layer->width; x++, offs++) {
-            opacity_layer->p[offs] = 256;
+            opacity_data[offs] = 256;
         }
     }
     //generate diagonal bars for mask rendering
     for (y = 0, offs = 0; y < mask_layer->height; y++) {
         for (x = 0; x < mask_layer->width; x++, offs++) {
-            mask_layer->p[offs] = 6*(x+y)/(mask_layer->width+mask_layer->height)%3;
+            mask_layer->rgb->data[offs] = 6*(x+y)/(mask_layer->width+mask_layer->height)%LAYER_COUNT;
         }
     }
 
@@ -124,7 +126,7 @@ int main(int argc, char *argv[])
 
     while (!quit_flag)
     {
-        rotation_t = display_run_stats().time;
+        rotation_t = engine_run_stats().time;
 
         // rotate and perspective transform the cube
         obj_3d_container_set_transform(
@@ -132,7 +134,7 @@ int main(int argc, char *argv[])
             omega_x * rotation_t,
             omega_y * rotation_t,
             omega_z * rotation_t,
-            0.0, 0.0, 0.0);
+            0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
         scene_3d_transform_and_light(scene);
 
         render_buffer_fill(render_layers[0], &(VEC_3){0.15, 0.1, 0.2});
@@ -154,13 +156,16 @@ int main(int argc, char *argv[])
             container->obj->wireframe_on = true;
             scene->render_buf = render_layers[2];
             scene_3d_render(scene);
-            render_buffer_fixed_mask(display_buffer(), (RENDER_BUFFER**)render_layers, mask_layer);
+            RGB_MAP* render_maps[] = {render_layers[0]->rgb, render_layers[1]->rgb, render_layers[2]->rgb};
+            rgb_map_fixed_mask(display_buffer()->rgb,
+                               render_maps,
+                               mask_layer->rgb);
         }
         else if (mode == DITHER_OPACITY) {
-            render_buffer_dither_opacity(display_buffer(), render_layers[0], render_layers[1], opacity_layer);
+            rgb_map_blend_dither(display_buffer()->rgb, render_layers[0]->rgb, render_layers[1]->rgb, opacity_layer->rgb);
         }
         else if (mode == FULL_OPACITY) {
-            render_buffer_full_opacity(display_buffer(), render_layers[0], render_layers[1], opacity_layer);
+            rgb_map_blend_mul(display_buffer()->rgb, render_layers[0]->rgb, render_layers[1]->rgb, opacity_layer->rgb);
         }
 
         display_show(0);
@@ -202,7 +207,7 @@ int main(int argc, char *argv[])
     render_buffer_free(mask_layer);
     render_buffer_free(opacity_layer);
     scene_3d_free(scene);
-    map_free(wood_map);    map_free(red_light_map);
+    rgb_map_free(wood_map);    rgb_map_free(red_light_map);
 
     engine_cleanup();
     return 0;

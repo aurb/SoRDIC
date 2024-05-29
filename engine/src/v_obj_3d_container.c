@@ -35,7 +35,11 @@ OBJ_3D_CONTAINER * obj_3d_container(OBJ_3D *obj, INT max_children) {
     cont->px = 0.0;
     cont->py = 0.0;
     cont->pz = 0.0;
-    copy_m(&cont->matrix, scale_m(1.0, 1.0, 1.0));
+    cont->sx = 1.0;
+    cont->sy = 1.0;
+    cont->sz = 1.0;
+    copy_m(&cont->object_matrix, scale_m(1.0, 1.0, 1.0));
+    copy_m(&cont->normals_matrix, scale_m(1.0, 1.0, 1.0));
     return cont;
 }
 
@@ -51,29 +55,48 @@ void obj_3d_container_free(OBJ_3D_CONTAINER *cont) {
     free(cont);
 }
 
-void obj_3d_container_set_transform(OBJ_3D_CONTAINER *cont, FLOAT ax, FLOAT ay, FLOAT az, FLOAT px, FLOAT py, FLOAT pz) {
+void obj_3d_container_set_transform(OBJ_3D_CONTAINER *cont, 
+                                    FLOAT ax, FLOAT ay, FLOAT az,
+                                    FLOAT px, FLOAT py, FLOAT pz,
+                                    FLOAT sx, FLOAT sy, FLOAT sz) {
     cont->ax = ax;
     cont->ay = ay;
     cont->az = az;
     cont->px = px;
     cont->py = py;
     cont->pz = pz;
+    cont->sx = sx;
+    cont->sy = sy;
+    cont->sz = sz;
 }
 
 void obj_3d_container_calc_matrices(OBJ_3D_CONTAINER *cont) {
-    MAT_4_4* parent_matrix;
-    if (cont->parent == NULL)
-        parent_matrix = scale_m(1.0, -1.0, 1.0); //Invert Y axis to direct it upwards
-    else
-        parent_matrix = &cont->parent->matrix;
+    MAT_4_4 *parent_object_matrix, *parent_normals_matrix;
+    if (cont->parent == NULL) {
+        parent_object_matrix = scale_m(1.0, -1.0, 1.0); //Invert Y axis to direct it upwards
+        parent_normals_matrix = scale_m(1.0, -1.0, 1.0); //Invert Y axis to direct it upwards
+    }
+    else {
+        parent_object_matrix = &cont->parent->object_matrix;
+        parent_normals_matrix = &cont->parent->normals_matrix;
+    }
 
     copy_m(
-        &cont->matrix,
+        &cont->object_matrix,
         mul_mm(
-            parent_matrix,
-            transform_m(cont->ax, cont->ay, cont->az, cont->px, cont->py, cont->pz)
+            parent_object_matrix,
+            transform_m(cont->ax, cont->ay, cont->az, cont->px, cont->py, cont->pz, cont->sx, cont->sy, cont->sz)
         )
     );
+
+    copy_m(
+        &cont->normals_matrix,
+        mul_mm(
+            parent_normals_matrix,
+            transform_m(cont->ax, cont->ay, cont->az, cont->px, cont->py, cont->pz, 1.0, 1.0, 1.0)
+        )
+    );
+
 
     for (INT i = 0; i < cont->child_cnt; i++)
         obj_3d_container_calc_matrices(cont->child[i]);
@@ -82,7 +105,7 @@ void obj_3d_container_calc_matrices(OBJ_3D_CONTAINER *cont) {
 void obj_3d_container_transform_geometry(OBJ_3D_CONTAINER *cont, MAT_4_4 *camera_space, MAT_4_4 *projection_space, INT scr_w, INT scr_h) {
 
     OBJ_3D* obj = cont->obj;
-    MAT_4_4 camera_transform;
+    MAT_4_4 camera_object_transform, camera_normals_transform;
     MAT_4_4 projection_transform;
     FACE *face;
     INT rotate_vertex_normals = 
@@ -98,12 +121,13 @@ void obj_3d_container_transform_geometry(OBJ_3D_CONTAINER *cont, MAT_4_4 *camera
         obj->type == TX_MAP_BUMP_REFLECTION ||
         obj->type == REFLECTION ||
         cont->scene->rotate_all_objects_vertex_normals;
-    copy_m(&camera_transform, mul_mm(camera_space, &cont->matrix));
-    copy_m(&projection_transform, mul_mm(projection_space, &camera_transform));
+    copy_m(&camera_object_transform, mul_mm(camera_space, &cont->object_matrix));
+    copy_m(&camera_normals_transform, mul_mm(camera_space, &cont->normals_matrix));
+    copy_m(&projection_transform, mul_mm(projection_space, &camera_object_transform));
 
     //Vertex transform to camera space
     for(INT i=0; i<obj->vcnt; i++) {
-        copy_v4(&obj->vertices[i].camera, mul_mv(&camera_transform, &obj->vertices[i].root));
+        copy_v4(&obj->vertices[i].camera, mul_mv(&camera_object_transform, &obj->vertices[i].root));
     }
 
     if (obj->type == POINT_LIGHTS || obj->type == PARTICLES) {
@@ -116,13 +140,13 @@ void obj_3d_container_transform_geometry(OBJ_3D_CONTAINER *cont, MAT_4_4 *camera
             obj->vertices[i].front = false;
         }
         //Transform zero point to camera space
-        copy_v4(&obj->zero_camera, mul_mv(&camera_transform, &(VEC_4){0.0, 0.0, 0.0, 1.0}));
+        copy_v4(&obj->zero_camera, mul_mv(&camera_normals_transform, &(VEC_4){0.0, 0.0, 0.0, 1.0}));
         //Normals rotation and back face occlusion
         obj->front_fcnt = 0;
         for (INT i = 0; i < obj->fcnt; i++) {
             face = obj->faces + i;
             copy_v4(&face->normal_camera,
-                sub_vv(mul_mv(&camera_transform, &face->normal_root), &obj->zero_camera));
+                sub_vv(mul_mv(&camera_normals_transform, &face->normal_root), &obj->zero_camera));
             if (dot_vv(&obj->vertices[face->vi[1]].camera, &face->normal_camera) > 0.0) {
                 obj->front_faces[obj->front_fcnt++] = obj->faces + i;
                 for (INT j = 0; j < face->vcnt; j++)
@@ -137,7 +161,7 @@ void obj_3d_container_transform_geometry(OBJ_3D_CONTAINER *cont, MAT_4_4 *camera
         if (obj->vertices[i].front) {
             if (rotate_vertex_normals) {
                 copy_v4(&obj->vertices[i].normal_camera,
-                    sub_vv(mul_mv(&camera_transform, &obj->vertices[i].normal_root), &obj->zero_camera));
+                    sub_vv(mul_mv(&camera_normals_transform, &obj->vertices[i].normal_root), &obj->zero_camera));
             }
             c = mul_mv(&projection_transform, &obj->vertices[i].root);
             //X perspective division

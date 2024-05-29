@@ -186,7 +186,7 @@ MAT_4_4 *scale_m(FLOAT scale_x, FLOAT scale_y, FLOAT scale_z) {
         );
 }
 
-MAT_4_4 *transform_m(FLOAT ang_x, FLOAT ang_y, FLOAT ang_z, FLOAT dx, FLOAT dy, FLOAT dz) {
+MAT_4_4 *transform_m(FLOAT ang_x, FLOAT ang_y, FLOAT ang_z, FLOAT dx, FLOAT dy, FLOAT dz, FLOAT s_x, FLOAT s_y, FLOAT s_z) {
     FLOAT cx, cy, cz; // cosinus of ang_x, ang_y, ang_z
     FLOAT sx, sy, sz; // sinus of ang_x, ang_y, ang_z 
     ang_x = PI*ang_x/180.0;
@@ -196,10 +196,10 @@ MAT_4_4 *transform_m(FLOAT ang_x, FLOAT ang_y, FLOAT ang_z, FLOAT dx, FLOAT dy, 
     sx = sin(ang_x); sy = sin(ang_y); sz = sin(ang_z);
     return
         store_m(&(MAT_4_4){
-            {           cy*cz,          -cy*sz,     sy,  dx},
-            {  sx*sy*cz+cx*sz, -sx*sy*sz+cx*cz, -sx*cy,  dy},
-            { -cx*sy*cz+sx*sz,  cx*sy*sz+sx*cz,  cx*cy,  dz},
-            {             0.0,             0.0,    0.0, 1.0}}
+            {           cy*cz*s_x,          -cy*sz*s_x,     sy*s_x,  dx},
+            {  sx*sy*cz+cx*sz*s_y, -sx*sy*sz+cx*cz*s_y, -sx*cy*s_y,  dy},
+            { -cx*sy*cz+sx*sz*s_z,  cx*sy*sz+sx*cz*s_z,  cx*cy*s_z,  dz},
+            {                 0.0,                 0.0,        0.0, 1.0}}
         );
 }
 
@@ -218,7 +218,7 @@ MAT_4_4 *camera_m(VEC_4 *AT, VEC_4 *EYE, FLOAT roll) {
 
     return
         mul_mm(
-            transform_m(0.0, 0.0, roll, 0.0, 0.0, 0.0),
+            transform_m(0.0, 0.0, roll, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0),
             store_m(&(MAT_4_4){
                 { (*X)[0], (*X)[1], (*X)[2], -dot_vv(X, EYE)},
                 { (*Y)[0], (*Y)[1], (*Y)[2], -dot_vv(Y, EYE)},

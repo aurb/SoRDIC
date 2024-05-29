@@ -22,10 +22,10 @@
 #include "v_obj_3d.h"
 #include "v_obj_3d_container.h"
 #include "v_obj_3d_generators.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 #include "v_lighting.h"
 #include "v_scene.h"
-#include "assets_2d.h"
+#include "maps.h"
 
 typedef struct {
     FLOAT ax;
@@ -69,7 +69,8 @@ void hierarchy_level(OBJ_3D_CONTAINER* parent, int level) {
         // Add individual transformation to this container
         obj_3d_container_set_transform(cont,
             0.0, i*ang, 0.0,
-            d*cos(i*ang*PI/180.0), 2.0, d*sin(i*ang*PI/180.0)
+            d*cos(i*ang*PI/180.0), 2.0, d*sin(i*ang*PI/180.0),
+            1.0, 1.0, 1.0
         );
         // Invoke recursively next level
         hierarchy_level(cont, level+1);
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
     // Build the root object of the scene tree
     container = obj_3d_container(obj_3d_copy(toroids[0]), BRANCHES);
     scene_3d_add_root_container(scene, container);
-    obj_3d_container_set_transform(container, 45.0, 0.0, 0.0, 0.0, -2.0, -3.0);
+    obj_3d_container_set_transform(container, 45.0, 0.0, 0.0, 0.0, -2.0, -3.0, 1.0, 1.0, 1.0);
     // Invoke the tree construction process for the remaining tree levels
     hierarchy_level(container, 1);
 
@@ -177,7 +178,8 @@ int main(int argc, char *argv[])
                 object_angles[i].az + caz + paz,
                 scene->renderable[i]->px,
                 scene->renderable[i]->py,
-                scene->renderable[i]->pz);
+                scene->renderable[i]->pz,
+                1.0, 1.0, 1.0);
         }
 
         // Execute a lighting calculation and rendering for the whole scene

@@ -21,16 +21,8 @@
 
 RENDER_BUFFER *render_buffer(INT width, INT height, INT z_buf_on);
 void render_buffer_free(RENDER_BUFFER *buf);
-
 void render_buffer_zero(RENDER_BUFFER *buf);
 void render_buffer_fill(RENDER_BUFFER *buf, VEC_3 *color);
-
 void render_buffer_copy(RENDER_BUFFER *dst, RENDER_BUFFER *src);
-void render_buffer_fixed_mask(RENDER_BUFFER *dst, RENDER_BUFFER **src, RENDER_BUFFER *mask);
-void render_buffer_dither_opacity(RENDER_BUFFER *dst, RENDER_BUFFER *src_ch0,
-                                  RENDER_BUFFER *src_ch1, RENDER_BUFFER *opacity);
-void render_buffer_full_opacity(RENDER_BUFFER *dst, RENDER_BUFFER *src_ch0,
-                                  RENDER_BUFFER *src_ch1, RENDER_BUFFER *opacity);
-void render_buffer_add_saturation(RENDER_BUFFER *dst, RENDER_BUFFER *src);
 
 #endif

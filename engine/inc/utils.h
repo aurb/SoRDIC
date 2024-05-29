@@ -19,6 +19,7 @@
 
 RGB_PIXEL utils_RGB_2_pix(VEC_3 *c);
 FLOAT utils_pix_2_L(RGB_PIXEL p);
+VEC_3* utils_blend_RGB(VEC_3 *c, VEC_3 *a, VEC_3 *b, FLOAT p);
 const char *runtime_file_path(const char *argv0, const char* relative_file_path);
 //Pseudo random number generator macros
 //Pseudo random number maximum

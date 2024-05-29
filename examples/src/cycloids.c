@@ -18,14 +18,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include "engine.h"
-#include "v_renderer.h"
+#include "v_rasterizer.h"
 #include "v_geometry.h"
 #include "v_obj_3d.h"
 #include "v_obj_3d_container.h"
 #include "v_obj_3d_generators.h"
 #include "v_lighting.h"
 #include "v_scene.h"
-#include "assets_2d.h"
+#include "maps.h"
 
 #define CYCLOID_1_KEY '1'
 #define CYCLOID_2_KEY '2'
@@ -206,7 +206,7 @@ interesting presets
             a_x + omega_x*rotation_t,
             a_y + omega_y*rotation_t,
             a_z + omega_z*rotation_t,
-            p_x, p_y, p_z);
+            p_x, p_y, p_z, 1.0, 1.0, 1.0);
 
         // Execute a lighting calculation and rendering for the whole scene
         scene_3d_transform_and_light(scene);
