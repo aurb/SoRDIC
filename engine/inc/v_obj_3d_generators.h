@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 #include "engine_types.h"
 
-OBJ_3D * obj_3d_light(VEC_3 *color);
+OBJ_3D * obj_3d_light(COLOR *color);
 OBJ_3D * obj_3d_regular_polyhedron(POLYHEDRON_TYPE type, FLOAT a);
 
 //parametric surface generation

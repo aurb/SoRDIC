@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,18 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "engine.h"
-#include "v_geometry.h"
-#include "v_obj_3d.h"
-#include "v_obj_3d_container.h"
-#include "v_obj_3d_generators.h"
-#include "v_rasterizer.h"
-#include "v_lighting.h"
-#include "v_scene.h"
-#include "maps.h"
 
 typedef struct {
     FLOAT ax;
@@ -45,12 +34,12 @@ const int BRANCHES = 3;
 const char *window_title = "SoRDIC 3D Object Hierarchy example";
 const int V1_COUNT = (18*2);
 const int V2_COUNT = (6*2);
-const VEC_3 color_1 = {0.99, 0.747, 0.478};
-const VEC_3 color_2 = {0.932, 0.797, 0.548};
-const VEC_3 color_3 = {0.877, 0.847, 0.603};
-const VEC_3 color_4 = {0.816, 0.898, 0.551};
-const VEC_3 color_5 = {0.776, 0.958, 0.351};
-const VEC_3 color_white = {0.8, 0.8, 0.8};
+const COLOR color_1 = {.a = 1., .r = 0.99, .g = 0.747, .b = 0.478};
+const COLOR color_2 = {.a = 1., .r = 0.932, .g = 0.797, .b = 0.548};
+const COLOR color_3 = {.a = 1., .r = 0.877, .g = 0.847, .b = 0.603};
+const COLOR color_4 = {.a = 1., .r = 0.816, .g = 0.898, .b = 0.551};
+const COLOR color_5 = {.a = 1., .r = 0.776, .g = 0.958, .b = 0.351};
+const COLOR color_white = {.b = 0.8, .g = 0.8, .r = 0.8};
 OBJ_3D* toroids[HIERARCHY_LEVELS];
 
 // Function for building the containers tree in the scene
@@ -119,8 +108,8 @@ int main(int argc, char *argv[])
     //Configure scene-wide lighting
     scene_3d_lighting_set_settings(scene, &(GLOBAL_LIGHT_SETTINGS){
         .enabled = true,
-        .ambient = {0.2, 0.2, 0.2},
-        .directional = COMPOUND_3(color_white),
+        .ambient = {.a = 1., .r = 0.2, .g = 0.2, .b = 0.2},
+        .directional = color_white,
         .direction = COMPOUND_4(*norm_v(&(VEC_4){0.0, 0.0, -1.0, 1.0}))}
     );
 
@@ -132,23 +121,23 @@ int main(int argc, char *argv[])
     toroids[4] = obj_3d_toroid(QUAD, 0.444, 0.148, V1_COUNT/2, V2_COUNT/2, 1, 1);
     obj_3d_set_properties(toroids[0], &(OBJ_3D){
         .type = SOLID_DIFF_SPEC,
-        .surface_color = COMPOUND_3(color_1),
+        .surface_color = color_1,
         .specular_power = 5.0 });
     obj_3d_set_properties(toroids[1], &(OBJ_3D){
         .type = SOLID_DIFF_SPEC,
-        .surface_color = COMPOUND_3(color_2),
+        .surface_color = color_2,
         .specular_power = 5.0 });
     obj_3d_set_properties(toroids[2], &(OBJ_3D){
         .type = SOLID_DIFF_SPEC,
-        .surface_color = COMPOUND_3(color_3),
+        .surface_color = color_3,
         .specular_power = 5.0 });
     obj_3d_set_properties(toroids[3], &(OBJ_3D){
         .type = SOLID_DIFF_SPEC,
-        .surface_color = COMPOUND_3(color_4),
+        .surface_color = color_4,
         .specular_power = 5.0 });
     obj_3d_set_properties(toroids[4], &(OBJ_3D){
         .type = SOLID_DIFF_SPEC,
-        .surface_color = COMPOUND_3(color_5),
+        .surface_color = color_5,
         .specular_power = 5.0 });
 
     // Build the root object of the scene tree
@@ -167,7 +156,7 @@ int main(int argc, char *argv[])
     }
 
     while (!quit_flag) {
-        render_buffer_zero(display_buffer());
+        RENDER_BUFFER_zero(display_buffer());
 
         // Update all renderable object transformations
         for (i=0; i<scene->renderable_cnt; i++) {

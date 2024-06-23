@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,17 +14,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdlib.h>
-#include <string.h>
-#include "engine_types.h"
 #include "engine.h"
-#include "maps.h"
 
-RENDER_BUFFER *render_buffer(INT width, INT height, INT z_buf_on) {
+RENDER_BUFFER *RENDER_BUFFER_alloc(INT width, INT height, INT z_buf_on) {
     RENDER_BUFFER *buf = calloc(1, sizeof(RENDER_BUFFER));
-    buf->rgb = rgb_map_alloc(width, height, 0);
+    buf->map = ARGB_MAP_alloc(width, height, 0);
     if (z_buf_on == Z_BUFFER_ON) {
-        buf->z = z_map_alloc(width, height);
+        buf->z = Z_MAP_alloc(width, height);
     }
     else {
         buf->z = NULL;
@@ -34,29 +30,34 @@ RENDER_BUFFER *render_buffer(INT width, INT height, INT z_buf_on) {
     return buf;
 }
 
-void render_buffer_free(RENDER_BUFFER *buf) {
-    if (buf->rgb != NULL) {
-        rgb_map_free(buf->rgb);
-        buf->rgb = NULL;
+void RENDER_BUFFER_free(RENDER_BUFFER *buf) {
+    if (buf->map != NULL) {
+        ARGB_MAP_free(buf->map);
+        buf->map = NULL;
     }
     if (buf->z != NULL) {
-        z_map_free(buf->z);
+        Z_MAP_free(buf->z);
         buf->z = NULL;
     }
     free(buf);
 }
 
-void render_buffer_zero(RENDER_BUFFER *buf) {
-    rgb_map_clear(buf->rgb);
-    z_map_clear(buf->z);
+void RENDER_BUFFER_zero(RENDER_BUFFER *buf) {
+    ARGB_MAP_clear(buf->map);
+    Z_MAP_clear(buf->z);
 }
 
-void render_buffer_fill(RENDER_BUFFER *buf, VEC_3 *color) {
-    rgb_map_fill(buf->rgb, color);
-    z_map_clear(buf->z);
+void RENDER_BUFFER_fill(RENDER_BUFFER *buf, COLOR *color) {
+    ARGB_MAP_fill(buf->map, color);
+    Z_MAP_clear(buf->z);
 }
 
-void render_buffer_copy(RENDER_BUFFER *dst, RENDER_BUFFER *src) {
-    rgb_map_copy(dst->rgb, src->rgb);
-    z_map_copy(dst->z, src->z);
+void RENDER_BUFFER_copy(RENDER_BUFFER *dst, RENDER_BUFFER *src) {
+    ARGB_MAP_copy(dst->map, src->map);
+    Z_MAP_copy(dst->z, src->z);
+}
+
+void RENDER_BUFFER_ARGB_MAP_copy(RENDER_BUFFER *dst, ARGB_MAP *src) {
+    ARGB_MAP_copy(dst->map, src);
+    Z_MAP_clear(dst->z);
 }

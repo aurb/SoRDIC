@@ -6,5 +6,25 @@ From v0.5 to v0.51
 - Added universal 1D transitions functions (line/square/cube/sin).
 - RGB color blending function.
 - Introduced Z_MAP.
-- Modified RENDER_BUFFER to use RGB_MAP/Z_MAP instead of the dedicated buffers.
-- Support for masking/blending/adding RGB_MAP (previously it was available only for RENDER_BUFFER).
+- Modified RENDER_BUFFER to use ARGB_MAP/Z_MAP instead of the dedicated buffers.
+- Support for masking/blending/adding ARGB_MAP (previously it was available only for RENDER_BUFFER).
+
+From v0.51 to v0.52
+- Dedicated struct for storing color information.
+- HSL to RGB conversion, color arithmetcs functions, and corresponding example.
+- Color gradient support.
+- Gradient-based map generators: linear, radial, xor.
+- Added alpha channel directly to ARGB_MAP and ARGB_PIXEL.
+- Maps blending and fading functions.
+    - Global OR per-pixel blending/fading parameters.
+- Plasma pattern generation using relative parameters, without additional data structures.
+- Map filter functions.
+    - Edge detection
+    - Horizontal blur
+    - Vertical blur
+    - Square pixelization
+    - Random pixelization
+- Map filters come in varieties(currently not all filters/not all varieties):
+    - Global OR per-pixel filter-specific parameters.
+    - RGB copy OR alpha-blended output on background map.
+- Improvements to polygon rasterization code.

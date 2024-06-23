@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 OBJ_3D *obj_3d(INT vcnt, INT fcnt);
 OBJ_3D *obj_3d_copy(OBJ_3D *src);
 void obj_3d_free(OBJ_3D *obj);
-void obj_3d_set_surface_color(OBJ_3D *obj, VEC_3 *color);
+void obj_3d_set_surface_color(OBJ_3D *obj, COLOR *color);
 void obj_3d_set_properties(OBJ_3D *obj, OBJ_3D *props);
 void obj_3d_init_geometry(OBJ_3D *obj);
 

@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 
     POLY_EDGE *polygon_edge = (POLY_EDGE *)polygon_edge_poll;
     POLY_EDGE *edge_ptr = NULL, *edge_end_ptr = NULL; //pointer to currently colored edge cell
-    RGB_PIXEL *draw_ptr = NULL, *end_draw_ptr = NULL;
+    ARGB_PIXEL *draw_ptr = NULL, *end_draw_ptr = NULL;
     INT row_offset;
     INT e, evi; //Edge Vertex Increment
     INT vrt1, vrt2; //vertex indices for the beginning and the end of the edge
@@ -49,7 +49,7 @@
 
     INT x, x1, dx;
     INT y, y1, dy;
-    RGB_PIXEL pix_val; //final pixel value
+    ARGB_PIXEL pix_val; //final pixel value
     INT bar_length;
 
 #if USE_Z
@@ -61,7 +61,7 @@
     #if USE_MAP_BUMP
         BUMP_PIXEL *map_bs = mbase->data;
     #else
-        RGB_PIXEL *map_bs = mbase->data;
+        ARGB_PIXEL *map_bs = mbase->data;
     #endif
     INT ub, ub1, dub; //U texture map coordinate
     INT vb, vb1, dvb; //V texture map coordinate
@@ -73,16 +73,16 @@
         INT vr_shift;
     #endif
     #if USE_MAP_MUL
-        RGB_PIXEL *map_m = mmul->data;
-        RGB_PIXEL map_m_val;
+        ARGB_PIXEL *map_m = mmul->data;
+        ARGB_PIXEL map_m_val;
         INT r, g, b;
     #endif
     #if USE_MAP_ADD
-        RGB_PIXEL *map_a = madd->data;
-        RGB_PIXEL map_a_val;
+        ARGB_PIXEL *map_a = madd->data;
+        ARGB_PIXEL map_a_val;
     #endif
     #if USE_MAP_BUMP
-        RGB_PIXEL *map_r = mref->data; //reflection map
+        ARGB_PIXEL *map_r = mref->data; //reflection map
         INT urc, vrc; //bump vector corrections read from map_bs[ub, vb]
         INT bu, bv; //bump vector along u and v axes
     #endif
@@ -107,24 +107,24 @@
             INT rs, rs1, drs;
             INT gs, gs1, dgs;
             INT bs, bs1, dbs;
-            RGB_PIXEL spec_val;
+            ARGB_PIXEL spec_val;
         #endif
     #elif USE_FLAT
         #if USE_DIFF
-            RGB_PIXEL diff_val = utils_RGB_2_pix((VEC_3*)diff); //diffuse component value
-            INT diff_b = diff_val&0x000000FF;
-            INT diff_g = (diff_val&0x0000FF00) >> 8;
-            INT diff_r = (diff_val&0x00FF0000) >> 16;
-            INT r, g, b;
+            ARGB_PIXEL diff_val = COLOR_to_ARGB_PIXEL((COLOR*)diff); //diffuse component value
+            ARGB_PIXEL diff_r = ARGB_PIXEL_RED(diff_val);
+            ARGB_PIXEL diff_g = ARGB_PIXEL_GREEN(diff_val);
+            ARGB_PIXEL diff_b = ARGB_PIXEL_BLUE(diff_val);
+            ARGB_PIXEL r, g, b;
         #endif
         #if USE_SPEC
-            RGB_PIXEL spec_val = utils_RGB_2_pix((VEC_3*)spec); //specular component value
+            ARGB_PIXEL spec_val = COLOR_to_ARGB_PIXEL((COLOR*)spec); //specular component value
         #endif
     #endif
 #endif
 //For flat shading without texture mapping calculate single value for every polygon pixel.
 #if USE_SOLID
-    pix_val = utils_RGB_2_pix((VEC_3*)color);
+    pix_val = COLOR_to_ARGB_PIXEL((COLOR*)color);
 #endif
 
 
@@ -154,13 +154,13 @@
 #if USE_MAP_BASE
     //Calculate vb_shift: bit shift length for map v coordinate
     //This number is derived from log_2 of texture width
-    vb_shift = FRACT_BITS;
+    vb_shift = FRACT_SHIFT;
     INT t = mbase->width-1;
     while(t) {
         vb_shift--;
         t >>= 1; }
     #if USE_MAP_MUL || USE_MAP_ADD || USE_MAP_BUMP
-        vr_shift = FRACT_BITS;
+        vr_shift = FRACT_SHIFT;
         #if USE_MAP_MUL
             t = mmul->width-1;
         #elif USE_MAP_ADD
@@ -187,8 +187,8 @@
                 vrt2 -= vcnt;
             else if (vrt2 < 0)
                 vrt2 += vcnt;
-            x  = (*vp[vrt1])[0] << FRACT_BITS;
-            x1 = (*vp[vrt2])[0] << FRACT_BITS;
+            x  = (*vp[vrt1])[0] << FRACT_SHIFT;
+            x1 = (*vp[vrt2])[0] << FRACT_SHIFT;
             y  = (*vp[vrt1])[1];
             y1 = (*vp[vrt2])[1];
             //Skip edges outside of the screen
@@ -198,52 +198,52 @@
             dz = z1 - z;
 #endif
 #if USE_MAP_BASE
-            ub  = mbc[vrt1].u << FRACT_BITS;
-            vb  = mbc[vrt1].v << FRACT_BITS;
-            ub1 = mbc[vrt2].u << FRACT_BITS;
-            vb1 = mbc[vrt2].v << FRACT_BITS;
+            ub  = mbc[vrt1].u << FRACT_SHIFT;
+            vb  = mbc[vrt1].v << FRACT_SHIFT;
+            ub1 = mbc[vrt2].u << FRACT_SHIFT;
+            vb1 = mbc[vrt2].v << FRACT_SHIFT;
             dub = ub1 - ub;
             dvb = vb1 - vb;
     #if USE_INTERP
         #if USE_DIFF
-            rd  = (INT)(255.*(*vdiff[vrt1])[2]) << FRACT_BITS;
-            gd  = (INT)(255.*(*vdiff[vrt1])[1]) << FRACT_BITS;
-            bd  = (INT)(255.*(*vdiff[vrt1])[0]) << FRACT_BITS;
-            rd1  = (INT)(255.*(*vdiff[vrt2])[2]) << FRACT_BITS;
-            gd1  = (INT)(255.*(*vdiff[vrt2])[1]) << FRACT_BITS;
-            bd1  = (INT)(255.*(*vdiff[vrt2])[0]) << FRACT_BITS;
+            rd  = (INT)(255.*(*vdiff[vrt1]).r) << FRACT_SHIFT;
+            gd  = (INT)(255.*(*vdiff[vrt1]).g) << FRACT_SHIFT;
+            bd  = (INT)(255.*(*vdiff[vrt1]).b) << FRACT_SHIFT;
+            rd1  = (INT)(255.*(*vdiff[vrt2]).r) << FRACT_SHIFT;
+            gd1  = (INT)(255.*(*vdiff[vrt2]).g) << FRACT_SHIFT;
+            bd1  = (INT)(255.*(*vdiff[vrt2]).b) << FRACT_SHIFT;
             drd = rd1 - rd;
             dgd = gd1 - gd;
             dbd = bd1 - bd;
         #endif
         #if USE_SPEC
-            rs  = (INT)(255.*(*vspec[vrt1])[2]) << FRACT_BITS;
-            gs  = (INT)(255.*(*vspec[vrt1])[1]) << FRACT_BITS;
-            bs  = (INT)(255.*(*vspec[vrt1])[0]) << FRACT_BITS;
-            rs1  = (INT)(255.*(*vspec[vrt2])[2]) << FRACT_BITS;
-            gs1  = (INT)(255.*(*vspec[vrt2])[1]) << FRACT_BITS;
-            bs1  = (INT)(255.*(*vspec[vrt2])[0]) << FRACT_BITS;
+            rs  = (INT)(255.*(*vspec[vrt1]).r) << FRACT_SHIFT;
+            gs  = (INT)(255.*(*vspec[vrt1]).g) << FRACT_SHIFT;
+            bs  = (INT)(255.*(*vspec[vrt1]).b) << FRACT_SHIFT;
+            rs1  = (INT)(255.*(*vspec[vrt2]).r) << FRACT_SHIFT;
+            gs1  = (INT)(255.*(*vspec[vrt2]).g) << FRACT_SHIFT;
+            bs1  = (INT)(255.*(*vspec[vrt2]).b) << FRACT_SHIFT;
             drs = rs1 - rs;
             dgs = gs1 - gs;
             dbs = bs1 - bs;
         #endif
     #else
         #if USE_MAP_MUL || USE_MAP_ADD || USE_MAP_BUMP
-            ur  = mrc[vrt1].u << FRACT_BITS;
-            vr  = mrc[vrt1].v << FRACT_BITS;
-            ur1 = mrc[vrt2].u << FRACT_BITS;
-            vr1 = mrc[vrt2].v << FRACT_BITS;
+            ur  = mrc[vrt1].u << FRACT_SHIFT;
+            vr  = mrc[vrt1].v << FRACT_SHIFT;
+            ur1 = mrc[vrt2].u << FRACT_SHIFT;
+            vr1 = mrc[vrt2].v << FRACT_SHIFT;
             dur = ur1 - ur;
             dvr = vr1 - vr;
         #endif
     #endif
 #elif USE_INTERP //&& !USE_MAP_BASE
-            r  = (INT)(255.*(*vcolor[vrt1])[2]) << FRACT_BITS;
-            g  = (INT)(255.*(*vcolor[vrt1])[1]) << FRACT_BITS;
-            b  = (INT)(255.*(*vcolor[vrt1])[0]) << FRACT_BITS;
-            r1 = (INT)(255.*(*vcolor[vrt2])[2]) << FRACT_BITS;
-            g1 = (INT)(255.*(*vcolor[vrt2])[1]) << FRACT_BITS;
-            b1 = (INT)(255.*(*vcolor[vrt2])[0]) << FRACT_BITS;
+            r  = (INT)(255.*(*vcolor[vrt1]).r) << FRACT_SHIFT;
+            g  = (INT)(255.*(*vcolor[vrt1]).g) << FRACT_SHIFT;
+            b  = (INT)(255.*(*vcolor[vrt1]).b) << FRACT_SHIFT;
+            r1 = (INT)(255.*(*vcolor[vrt2]).r) << FRACT_SHIFT;
+            g1 = (INT)(255.*(*vcolor[vrt2]).g) << FRACT_SHIFT;
+            b1 = (INT)(255.*(*vcolor[vrt2]).b) << FRACT_SHIFT;
             dr = r1 - r;
             dg = g1 - g;
             db = b1 - b;
@@ -281,31 +281,31 @@
 #endif
             }
 
-            x += (1 << (FRACT_BITS-1));
+            x += (1 << (FRACT_SHIFT-1));
 #if USE_MAP_BASE
-            ub += (1 << (FRACT_BITS-1));
-            vb += (1 << (FRACT_BITS-1));
+            ub += (1 << (FRACT_SHIFT-1));
+            vb += (1 << (FRACT_SHIFT-1));
     #if USE_INTERP
         #if USE_DIFF
-            rd += (1 << (FRACT_BITS-1));
-            gd += (1 << (FRACT_BITS-1));
-            bd += (1 << (FRACT_BITS-1));
+            rd += (1 << (FRACT_SHIFT-1));
+            gd += (1 << (FRACT_SHIFT-1));
+            bd += (1 << (FRACT_SHIFT-1));
         #endif
         #if USE_SPEC
-            rs += (1 << (FRACT_BITS-1));
-            gs += (1 << (FRACT_BITS-1));
-            bs += (1 << (FRACT_BITS-1));
+            rs += (1 << (FRACT_SHIFT-1));
+            gs += (1 << (FRACT_SHIFT-1));
+            bs += (1 << (FRACT_SHIFT-1));
         #endif
     #else
         #if USE_MAP_MUL || USE_MAP_ADD || USE_MAP_BUMP
-            ur += (1 << (FRACT_BITS-1));
-            vr += (1 << (FRACT_BITS-1));
+            ur += (1 << (FRACT_SHIFT-1));
+            vr += (1 << (FRACT_SHIFT-1));
         #endif
     #endif
 #elif USE_INTERP //&& !USE_MAP_BASE
-            r += (1 << (FRACT_BITS-1));
-            g += (1 << (FRACT_BITS-1));
-            b += (1 << (FRACT_BITS-1));
+            r += (1 << (FRACT_SHIFT-1));
+            g += (1 << (FRACT_SHIFT-1));
+            b += (1 << (FRACT_SHIFT-1));
 #endif
 
             if (y < 0) { //y1>=0 assured above by if (y > vrb_height-1 || y1 < 0)
@@ -354,7 +354,7 @@
 
             // If there's more than one row to draw - store the first one
             if (dy != 0) {
-                edge_ptr->x = x >> FRACT_BITS;
+                edge_ptr->x = x >> FRACT_SHIFT;
 #if USE_Z
                 edge_ptr->z = z;
 #endif
@@ -389,7 +389,7 @@
             //Calculate whole edge between vrt1 and vrt2
             while (edge_ptr <= edge_end_ptr) {
                 x += dx;
-                edge_ptr->x = x >> FRACT_BITS;
+                edge_ptr->x = x >> FRACT_SHIFT;
 #if USE_Z
                 z += dz;
                 edge_ptr->z = z;
@@ -563,138 +563,142 @@
 #if USE_MAP_BASE
     #if USE_MAP_BUMP
                     //Extraction of bump reflection vectors. Correct version:
-                    //bv = map_bs[(vb&~FRACT_MASK)>>vb_shift | ub>>FRACT_BITS]&0xFFFF0000;
-                    //bu = (map_bs[(vb&~FRACT_MASK)>>vb_shift | ub>>FRACT_BITS]&0x0000FFFF)<<FRACT_BITS;
+                    //bv = map_bs[(vb&~FRACT_MASK)>>vb_shift | ub>>FRACT_SHIFT]&0xFFFF0000;
+                    //bu = (map_bs[(vb&~FRACT_MASK)>>vb_shift | ub>>FRACT_SHIFT]&0x0000FFFF)<<FRACT_SHIFT;
                     //Incorrect, but faster version:
-                    bv = map_bs[(vb&~FRACT_MASK)>>vb_shift | ub>>FRACT_BITS];
-                    bu = bv << FRACT_BITS;
+                    bv = map_bs[(vb&~FRACT_MASK)>>vb_shift | ub>>FRACT_SHIFT];
+                    bu = bv << FRACT_SHIFT;
 
                     vrc = vr+bv;
                     urc = ur+bu;
-                    pix_val = map_r[(vrc&~FRACT_MASK)>>vr_shift | urc>>FRACT_BITS];
+                    pix_val = map_r[(vrc&~FRACT_MASK)>>vr_shift | urc>>FRACT_SHIFT];
     #else
-                    pix_val = map_bs[(vb&~FRACT_MASK)>>vb_shift | ub>>FRACT_BITS];
+                    pix_val = map_bs[(vb&~FRACT_MASK)>>vb_shift | ub>>FRACT_SHIFT];
     #endif
     #if USE_FLAT
         #if USE_DIFF
-                    b = pix_val&0x000000FF;
-                    g = pix_val&0x0000FF00;
-                    r = pix_val&0x00FF0000;
-                    pix_val = ((diff_b*b) |
-                            ((diff_g*g)& 0x00FF0000) |
-                            ((diff_r*r)& 0xFF000000)) >> 8;
+                    r = ARGB_PIXEL_RED(pix_val);
+                    g = ARGB_PIXEL_GREEN(pix_val);
+                    b = ARGB_PIXEL_BLUE(pix_val);
+                    pix_val = A_MASK |
+                        (diff_r*r >> 8) << R_SHIFT |
+                        (diff_g*g >> 8) << G_SHIFT |
+                        (diff_b*b >> 8) << B_SHIFT;
         #endif
         #if USE_SPEC
-                    pix_val = (pix_val&0x00FEFEFF) + (spec_val&0x00FEFEFF);
-                    if (pix_val & 0x01000000) {
-                        if (pix_val & 0x00010000) {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x00FFFFFF;
+                    pix_val = (pix_val&0xFEFEFEFF) + (spec_val&0x00FEFEFF);
+                    if (pix_val & R_OVFL) {
+                        if (pix_val & G_OVFL) {
+                            if (pix_val & B_OVFL)
+                                pix_val |= R_MASK|G_MASK|B_MASK;
                             else
-                                pix_val |= 0x00FFFF00;
+                                pix_val |= R_MASK|G_MASK;
                         }
                         else {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x00FF00FF;
+                            if (pix_val & B_OVFL)
+                                pix_val |= R_MASK|B_MASK;
                             else
-                                pix_val |= 0x00FF0000;
+                                pix_val |= R_MASK;
                         }
                     }
                     else {
-                        if (pix_val & 0x00010000) {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x0000FFFF;
+                        if (pix_val & G_OVFL) {
+                            if (pix_val & B_OVFL)
+                                pix_val |= G_MASK|B_MASK;
                             else
-                                pix_val |= 0x0000FF00;
+                                pix_val |= G_MASK;
                         }
                         else {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x000000FF;
+                            if (pix_val & B_OVFL)
+                                pix_val |= B_MASK;
                         }
                     }
         #endif
     #elif USE_INTERP
         #if USE_DIFF
-                    bm = pix_val&0x000000FF; //extract components from map texel
-                    gm = pix_val&0x0000FF00;
-                    rm = pix_val&0x00FF0000;
-                    pix_val = (((bd >> FRACT_BITS)*bm) |
-                            (((gd >> FRACT_BITS)*gm)& 0x00FF0000) |
-                            (((rd >> FRACT_BITS)*rm)& 0xFF000000)) >> 8;
+                    rm = ARGB_PIXEL_RED(pix_val);
+                    gm = ARGB_PIXEL_GREEN(pix_val);
+                    bm = ARGB_PIXEL_BLUE(pix_val);
+                    pix_val = A_MASK |
+                            ((rd>>FRACT_SHIFT)*rm >> 8) << R_SHIFT |
+                            ((gd>>FRACT_SHIFT)*gm >> 8) << G_SHIFT |
+                            ((bd>>FRACT_SHIFT)*bm >> 8) << B_SHIFT;
         #endif
         #if USE_SPEC
+                    //TODO wrap in macrodefinitions ths spec_val expression
                     spec_val = (rs & 0x0FF0000) | ((gs & 0x0FF0000)>>8) | (bs>>16);
-                    pix_val = (pix_val&0x00FEFEFF) + (spec_val&0x00FEFEFF);
-                    if (pix_val & 0x01000000) {
-                        if (pix_val & 0x00010000) {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x00FFFFFF;
+                    pix_val = (pix_val&0xFEFEFEFF) + (spec_val&0x00FEFEFF);
+                    if (pix_val & R_OVFL) {
+                        if (pix_val & G_OVFL) {
+                            if (pix_val & B_OVFL)
+                                pix_val |= R_MASK|G_MASK|B_MASK;
                             else
-                                pix_val |= 0x00FFFF00;
+                                pix_val |= R_MASK|G_MASK;
                         }
                         else {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x00FF00FF;
+                            if (pix_val & B_OVFL)
+                                pix_val |= R_MASK|B_MASK;
                             else
-                                pix_val |= 0x00FF0000;
+                                pix_val |= R_MASK;
                         }
                     }
                     else {
-                        if (pix_val & 0x00010000) {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x0000FFFF;
+                        if (pix_val & G_OVFL) {
+                            if (pix_val & B_OVFL)
+                                pix_val |= G_MASK|B_MASK;
                             else
-                                pix_val |= 0x0000FF00;
+                                pix_val |= G_MASK;
                         }
                         else {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x000000FF;
+                            if (pix_val & B_OVFL)
+                                pix_val |= B_MASK;
                         }
                     }
         #endif
     #else
         #if USE_MAP_MUL
-                    map_m_val = map_m[(vr&~FRACT_MASK)>>vr_shift | ur>>FRACT_BITS];
-                    b = (pix_val&0x000000FF)*(map_m_val&0x000000FF);
-                    g = (pix_val&0x0000FF00)*((map_m_val>>8)&0x000000FF);
-                    r = (pix_val&0x00FF0000)*((map_m_val>>16)&0x000000FF);
-                    pix_val = ((b & 0x0000FF00) |
-                               (g & 0x00FF0000) |
-                               (r & 0xFF000000)) >> 8;
+                    map_m_val = map_m[(vr&~FRACT_MASK)>>vr_shift | ur>>FRACT_SHIFT];
+                    r = ARGB_PIXEL_RED(pix_val)*ARGB_PIXEL_RED(map_m_val) >> 8;
+                    g = ARGB_PIXEL_GREEN(pix_val)*ARGB_PIXEL_GREEN(map_m_val) >> 8;
+                    b = ARGB_PIXEL_BLUE(pix_val)*ARGB_PIXEL_BLUE(map_m_val) >> 8;
+                    pix_val = A_MASK | (r << R_SHIFT) | (g << G_SHIFT) | (b << B_SHIFT);
         #endif
         #if USE_MAP_ADD
-                    map_a_val = map_a[(vr&~FRACT_MASK)>>vr_shift | ur>>FRACT_BITS];
-                    pix_val = (pix_val&0x00FEFEFF) + (map_a_val&0x00FEFEFF);
-                    if (pix_val & 0x01000000) {
-                        if (pix_val & 0x00010000) {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x00FFFFFF;
+                    map_a_val = map_a[(vr&~FRACT_MASK)>>vr_shift | ur>>FRACT_SHIFT];
+                    pix_val = (pix_val&0xFEFEFEFF) + (map_a_val&0x00FEFEFF);
+                    if (pix_val & R_OVFL) {
+                        if (pix_val & G_OVFL) {
+                            if (pix_val & B_OVFL)
+                                pix_val |= R_MASK|G_MASK|B_MASK;
                             else
-                                pix_val |= 0x00FFFF00;
+                                pix_val |= R_MASK|G_MASK;
                         }
                         else {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x00FF00FF;
+                            if (pix_val & B_OVFL)
+                                pix_val |= R_MASK|B_MASK;
                             else
-                                pix_val |= 0x00FF0000;
+                                pix_val |= R_MASK;
                         }
                     }
                     else {
-                        if (pix_val & 0x00010000) {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x0000FFFF;
+                        if (pix_val & G_OVFL) {
+                            if (pix_val & B_OVFL)
+                                pix_val |= G_MASK|B_MASK;
                             else
-                                pix_val |= 0x0000FF00;
+                                pix_val |= G_MASK;
                         }
                         else {
-                            if (pix_val & 0x00000100)
-                                pix_val |= 0x000000FF;
+                            if (pix_val & B_OVFL)
+                                pix_val |= B_MASK;
                         }
                     }
         #endif
     #endif
 #elif USE_INTERP //&& !USE_MAP_BASE
-                    pix_val = (r & 0x0FF0000) | ((g & 0x0FF0000)>>8) | (b>>16);
+                    pix_val = A_MASK | 
+                              ((r >> FRACT_SHIFT) << R_SHIFT) | 
+                              ((g >> FRACT_SHIFT) << G_SHIFT) | 
+                              ((b >> FRACT_SHIFT) << B_SHIFT);
 #endif
 
                     *draw_ptr = pix_val;

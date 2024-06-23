@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ void vr_geometry_cleanup();
 
 VEC_4 *store_v4(VEC_4 *src);
 MAT_4_4 *store_m(MAT_4_4 *src);
-VEC_3 *copy_v3(VEC_3 *dst, VEC_3 *src);
 VEC_4 *copy_v4(VEC_4 *dst, VEC_4 *src);
 MAT_4_4 *copy_m(MAT_4_4 *dst, MAT_4_4 *src);
 VEC_4 *add_vv(VEC_4 *a, VEC_4 *b);

@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,9 +17,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-RGB_PIXEL utils_RGB_2_pix(VEC_3 *c);
-FLOAT utils_pix_2_L(RGB_PIXEL p);
-VEC_3* utils_blend_RGB(VEC_3 *c, VEC_3 *a, VEC_3 *b, FLOAT p);
+#include "engine_types.h"
+
 const char *runtime_file_path(const char *argv0, const char* relative_file_path);
 //Pseudo random number generator macros
 //Pseudo random number maximum
@@ -32,8 +31,7 @@ const char *runtime_file_path(const char *argv0, const char* relative_file_path)
 //Universal limit macro for pseudo random number
 #define LIMIT_N(N, M) ((M)*(FLOAT)(N)/(FLOAT)0x7FFFFFFF)
 
-// Conversion macros for turning 3 and 4 element arrays into compound lists
-#define COMPOUND_3(a) {(a)[0], (a)[1], (a)[2]}
+// Conversion macro for turning 4 element arrays into compound list
 #define COMPOUND_4(a) {(a)[0], (a)[1], (a)[2], (a)[3]}
 
 #endif

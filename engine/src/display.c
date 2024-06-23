@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,14 +17,8 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "engine_types.h"
 #include "engine.h"
-#include "display.h"
-#include "render_buffer.h"
 
 SDL_Window *display_window;
 SDL_Renderer *display_renderer;
@@ -62,7 +56,7 @@ int display_init(int window_width, int window_height, int window_flags, const ch
     display_texture = SDL_CreateTexture(display_renderer,
         SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
     /** Display render buffer has Z buffer enabled by default. */
-    display_buf = render_buffer(window_width, window_height, Z_BUFFER_ON);
+    display_buf = RENDER_BUFFER_alloc(window_width, window_height, Z_BUFFER_ON);
 
     if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
         printf("Error initializing SDL_image\n");
@@ -79,7 +73,7 @@ int display_init(int window_width, int window_height, int window_flags, const ch
 }
 
 void display_show(const int delay) {
-    SDL_UpdateTexture(display_texture, NULL, (RGB_PIXEL*)display_buf->rgb->data, display_buf->width * sizeof(RGB_PIXEL));
+    SDL_UpdateTexture(display_texture, NULL, (ARGB_PIXEL*)display_buf->map->data, display_buf->width * sizeof(ARGB_PIXEL));
     SDL_RenderCopy(display_renderer, display_texture, NULL, NULL);
     SDL_RenderPresent(display_renderer);
     SDL_Delay(delay);
@@ -95,7 +89,7 @@ void display_cleanup() {
     SDL_DestroyRenderer(display_renderer); 
     SDL_Quit();
 
-    render_buffer_free(display_buf);
+    RENDER_BUFFER_free(display_buf);
 }
 
 RENDER_BUFFER *display_buffer() {

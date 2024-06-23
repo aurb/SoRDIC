@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
 #include <SDL2/SDL_mixer.h>
 
 #include "engine.h"
-#include "display.h"
-#include "v_rasterizer.h"
 
 typedef struct {
     INT timestamp;
@@ -63,6 +61,8 @@ INT engine_init(INT window_width, INT window_height, INT window_flags, const cha
         return 1;
     }
     init_keyboard_handler();
+    map_generator_init();
+    map_filters_init();
     /** Init 3d rendering */
     vr_init();
 
@@ -143,6 +143,8 @@ EVENT* engine_poll_events() {
 
 INT engine_cleanup() {
     vr_cleanup();
+    map_generator_cleanup();
+    map_filters_cleanup();
     Mix_FreeMusic(engine_music);
     engine_music = NULL;
     Mix_Quit();

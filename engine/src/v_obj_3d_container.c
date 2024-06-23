@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,13 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <math.h>
-#include <stdlib.h>
-
-#include "engine_types.h"
-#include "v_geometry.h"
-#include "v_obj_3d.h"
-#include "v_lighting.h"
+#include "engine.h"
 
 OBJ_3D_CONTAINER * obj_3d_container(OBJ_3D *obj, INT max_children) {
     OBJ_3D_CONTAINER *cont = calloc(1, sizeof(OBJ_3D_CONTAINER));

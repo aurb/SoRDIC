@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,10 +19,11 @@
 
 #include "engine_types.h"
 
-RENDER_BUFFER *render_buffer(INT width, INT height, INT z_buf_on);
-void render_buffer_free(RENDER_BUFFER *buf);
-void render_buffer_zero(RENDER_BUFFER *buf);
-void render_buffer_fill(RENDER_BUFFER *buf, VEC_3 *color);
-void render_buffer_copy(RENDER_BUFFER *dst, RENDER_BUFFER *src);
+RENDER_BUFFER *RENDER_BUFFER_alloc(INT width, INT height, INT z_buf_on);
+void RENDER_BUFFER_free(RENDER_BUFFER *buf);
+void RENDER_BUFFER_zero(RENDER_BUFFER *buf);
+void RENDER_BUFFER_fill(RENDER_BUFFER *buf, COLOR *color);
+void RENDER_BUFFER_copy(RENDER_BUFFER *dst, RENDER_BUFFER *src);
+void RENDER_BUFFER_ARGB_MAP_copy(RENDER_BUFFER *dst, ARGB_MAP *src);
 
 #endif

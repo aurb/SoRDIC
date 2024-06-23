@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,13 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "engine_types.h"
-#include "v_rasterizer.h"
-#include "v_geometry.h"
+#include "engine.h"
 
 //Internal functions forward declarations
 void add_adjacent_vertex_index(VERTEX *v, INT avi);
@@ -74,14 +68,14 @@ void obj_3d_free(OBJ_3D *obj) {
     free(obj);
 }
 
-void obj_3d_set_surface_color(OBJ_3D *obj, VEC_3 *color) {
+void obj_3d_set_surface_color(OBJ_3D *obj, COLOR *color) {
     INT i = 0;
-    copy_v3(&obj->surface_color, color);
+    obj->surface_color = *color;
     for (i = 0; i < obj->fcnt; i++) {
-        copy_v3(&obj->faces[i].color_surf, color);
+        obj->faces[i].color_surf = *color;
     }
     for (i = 0; i < obj->vcnt; i++) {
-        copy_v3(&obj->vertices[i].color_surf, color);
+        obj->vertices[i].color_surf = *color;
     }
 }
 
@@ -91,13 +85,13 @@ color, wireframe_color, type, wireframe_on, specular_power, base_map, reflection
 */
 void obj_3d_set_properties(OBJ_3D *obj, OBJ_3D *props) {
     INT i = 0, j = 0;
-    copy_v3(&obj->wireframe_color, &props->wireframe_color);
-    copy_v3(&obj->surface_color, &props->surface_color);
+    obj->wireframe_color = props->wireframe_color;
+    obj->surface_color = props->surface_color;
     for (i = 0; i < obj->fcnt; i++) {
-        copy_v3(&obj->faces[i].color_surf, &props->surface_color);
+        obj->faces[i].color_surf = props->surface_color;
     }
     for (i = 0; i < obj->vcnt; i++) {
-        copy_v3(&obj->vertices[i].color_surf, &props->surface_color);
+        obj->vertices[i].color_surf = props->surface_color;
     }
 
     obj->type = props->type;
@@ -229,7 +223,7 @@ void obj_3d_draw_wireframe(OBJ_3D *obj) {
                     if (v2->front) {
                         v[0] = (PROJECTION_COORD*)v1->projection;
                         v[1] = (PROJECTION_COORD*)v2->projection;
-                        line_flat_z(v, (VEC_3*)obj->wireframe_color);
+                        line_flat_z(v, &obj->wireframe_color);
                     }
                 }
             }
@@ -246,7 +240,7 @@ void obj_3d_draw_solid_unshaded(OBJ_3D *obj) {
         face = obj->front_faces[i];
         for (j=0; j<face->vcnt; j++)
             v[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
-        polygon_solid_z(face->vcnt, v, (VEC_3*)face->color_surf);
+        polygon_solid_z(face->vcnt, v, &face->color_surf);
     }
 }
 
@@ -259,14 +253,14 @@ void obj_3d_draw_solid_shaded(OBJ_3D *obj) {
         face = obj->front_faces[i];
         for (j = 0; j < face->vcnt; j++)
             v[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
-        polygon_solid_z(face->vcnt, v, (VEC_3*)face->color_diff);
+        polygon_solid_z(face->vcnt, v, &face->color_diff);
     }
 }
 
 void obj_3d_draw_interp_unshaded(OBJ_3D *obj) {
     FACE *face;
     PROJECTION_COORD *vp[MAX_FACE_VERTICES]; //vertices of currently drawn face
-    VEC_3 *vc[MAX_FACE_VERTICES];
+    COLOR *vc[MAX_FACE_VERTICES];
     INT i, j;
 
     // Draw all the faces
@@ -274,7 +268,7 @@ void obj_3d_draw_interp_unshaded(OBJ_3D *obj) {
         face = obj->front_faces[i];
         for (j = 0; j < face->vcnt; j++) {
             vp[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
-            vc[j] = (VEC_3*)obj->vertices[face->vi[j]].color_surf;
+            vc[j] = &obj->vertices[face->vi[j]].color_surf;
         }
         polygon_interp_z(face->vcnt, vp, vc);
     }
@@ -283,7 +277,7 @@ void obj_3d_draw_interp_unshaded(OBJ_3D *obj) {
 void obj_3d_draw_interp_shaded(OBJ_3D *obj) {
     FACE *face;
     PROJECTION_COORD *vp[MAX_FACE_VERTICES]; //vertices of currently drawn face
-    VEC_3 *vc[MAX_FACE_VERTICES];
+    COLOR *vc[MAX_FACE_VERTICES];
     INT i, j;
 
     // Draw all the faces
@@ -291,7 +285,7 @@ void obj_3d_draw_interp_shaded(OBJ_3D *obj) {
         face = obj->front_faces[i];
         for (j = 0; j < face->vcnt; j++) {
             vp[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
-            vc[j] = (VEC_3*)obj->vertices[face->vi[j]].color_diff;
+            vc[j] = &obj->vertices[face->vi[j]].color_diff;
         }
         polygon_interp_z(face->vcnt, vp, vc);
     }
@@ -408,7 +402,7 @@ void obj_3d_draw_solid_diff_textured(OBJ_3D *obj) {
         for (j = 0; j < face->vcnt; j++) {
             vp[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
         }
-        polygon_solid_diff_texture_z(face->vcnt, vp, (VEC_3*)face->color_diff, face->bc, obj->base_map);
+        polygon_solid_diff_texture_z(face->vcnt, vp, &face->color_diff, face->bc, obj->base_map);
     }
 }
 
@@ -422,7 +416,7 @@ void obj_3d_draw_solid_spec_textured(OBJ_3D *obj) {
         for (j = 0; j < face->vcnt; j++) {
             vp[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
         }
-        polygon_solid_spec_texture_z(face->vcnt, vp, (VEC_3*)face->color_spec, face->bc, obj->base_map);
+        polygon_solid_spec_texture_z(face->vcnt, vp, &face->color_spec, face->bc, obj->base_map);
     }
 }
 
@@ -436,14 +430,14 @@ void obj_3d_draw_solid_diff_spec_textured(OBJ_3D *obj) {
         for (j = 0; j < face->vcnt; j++) {
             vp[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
         }
-        polygon_solid_diff_spec_texture_z(face->vcnt, vp, (VEC_3*)face->color_diff, (VEC_3*)face->color_spec, face->bc, obj->base_map);
+        polygon_solid_diff_spec_texture_z(face->vcnt, vp, &face->color_diff, &face->color_spec, face->bc, obj->base_map);
     }
 }
 
 void obj_3d_draw_interp_diff_textured(OBJ_3D *obj) {
     FACE *face;
     PROJECTION_COORD *vp[MAX_FACE_VERTICES]; //vertices of currently drawn face
-    VEC_3 *vdiff[MAX_FACE_VERTICES];
+    COLOR *vdiff[MAX_FACE_VERTICES];
     INT i, j;
 
     // Draw all the faces
@@ -451,7 +445,7 @@ void obj_3d_draw_interp_diff_textured(OBJ_3D *obj) {
         face = obj->front_faces[i];
         for (j = 0; j < face->vcnt; j++) {
             vp[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
-            vdiff[j] = (VEC_3*)obj->vertices[face->vi[j]].color_diff;
+            vdiff[j] = &obj->vertices[face->vi[j]].color_diff;
         }
         polygon_interp_diff_texture_z(face->vcnt, vp, vdiff, face->bc, obj->base_map);
     }
@@ -460,7 +454,7 @@ void obj_3d_draw_interp_diff_textured(OBJ_3D *obj) {
 void obj_3d_draw_interp_spec_textured(OBJ_3D *obj) {
     FACE *face;
     PROJECTION_COORD *vp[MAX_FACE_VERTICES]; //vertices of currently drawn face
-    VEC_3 *vspec[MAX_FACE_VERTICES];
+    COLOR *vspec[MAX_FACE_VERTICES];
     INT i, j;
 
     // Draw all the faces
@@ -468,7 +462,7 @@ void obj_3d_draw_interp_spec_textured(OBJ_3D *obj) {
         face = obj->front_faces[i];
         for (j = 0; j < face->vcnt; j++) {
             vp[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
-            vspec[j] = (VEC_3*)obj->vertices[face->vi[j]].color_spec;
+            vspec[j] = &obj->vertices[face->vi[j]].color_spec;
         }
         polygon_interp_spec_texture_z(face->vcnt, vp, vspec, face->bc, obj->base_map);
     }
@@ -477,8 +471,8 @@ void obj_3d_draw_interp_spec_textured(OBJ_3D *obj) {
 void obj_3d_draw_interp_diff_spec_textured(OBJ_3D *obj) {
     FACE *face;
     PROJECTION_COORD *vp[MAX_FACE_VERTICES]; //vertices of currently drawn face
-    VEC_3 *vdiff[MAX_FACE_VERTICES];
-    VEC_3 *vspec[MAX_FACE_VERTICES];
+    COLOR *vdiff[MAX_FACE_VERTICES];
+    COLOR *vspec[MAX_FACE_VERTICES];
     INT i, j;
 
     // Draw all the faces
@@ -486,8 +480,8 @@ void obj_3d_draw_interp_diff_spec_textured(OBJ_3D *obj) {
         face = obj->front_faces[i];
         for (j = 0; j < face->vcnt; j++) {
             vp[j] = (PROJECTION_COORD*)obj->vertices[face->vi[j]].projection;
-            vdiff[j] = (VEC_3*)obj->vertices[face->vi[j]].color_diff;
-            vspec[j] = (VEC_3*)obj->vertices[face->vi[j]].color_spec;
+            vdiff[j] = &obj->vertices[face->vi[j]].color_diff;
+            vspec[j] = &obj->vertices[face->vi[j]].color_spec;
         }
         polygon_interp_diff_spec_texture_z(face->vcnt, vp, vdiff, vspec, face->bc, obj->base_map);
     }

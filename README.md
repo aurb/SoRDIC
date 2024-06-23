@@ -4,12 +4,15 @@
 
 https://github.com/aurb/SoRDIC
 
-Copyright (C) 2024 https://github.com/aurb
+https://github.com/aurb
+
+Copyright (C) 2024 Andrzej Urbaniak
+
 Copyright (C) 2019 Sascha Ende
 
 ## Introduction
 
-SoRDIC is a creative coding framework. It provides an engine for software-only real-time graphics generation. It has been implemented in pure C99 to provide cross-platform, cross-compilation capabilities. Portability was achieved by, among other things, giving up any means of hardware acceleration of graphics. Currently, to access the host platform, SoRDIC uses libsdl2, however, swapping to another platform backend should be feasible.
+SoRDIC is a creative coding framework. It provides an engine for software-only real-time graphics generation. SoRDIC is focused more on graphics aesthetics and speed than on photorealism. It has been implemented in pure C99 to provide cross-platform, cross-compilation capabilities. Portability was achieved by, among other things, giving up any means of hardware acceleration of graphics. Currently, to access the host platform, SoRDIC uses libsdl2, however, swapping to another platform backend should be feasible.
 
 The target application of SoRDIC is real-time graphical presentations and animations. SoRDIC was created for use on the demoscene. Development of simple games should also be possible. The library comes with a set of examples showing how to use it.
 
@@ -32,11 +35,27 @@ Built examples will be put into `examples` subdirectory. To consecutively run th
 - Music playback support
 - Music annotation engine (for animation synchronisation)
 - Multiple rendering buffer targets with Z buffer support
-- Rendering buffers layering
+- 2D maps layering functions:
     - Addition
     - Masking
+    - Global alpha blending
     - Per-pixel alpha blending
+    - Global fading
+    - Per-pixel fading
+    - Global dithering
+    - Per-pixel dithering
+- 2D maps filtering functions:
+    - Edge detection
+    - Horizontal blur
+    - Vertical blur
+    - Square pixelization
+    - Random pixelization
+- 2D maps gradient-based generators:
+    - linear
+    - radial
+    - xor
 - Color calculation/conversion functions
+- Color gradients
 - Universal 1D transition curve functions (linear/square/cube/sin)
 - Ability to use image files as texture maps and/or height/bump maps
 - 3D graphics
@@ -87,7 +106,6 @@ Currently it is just my toy project. Much of the intended functionality has been
 - New/fancy 3D object rendering/rasterization algorithms.
 - Separation of the T&L and rasterization stages into the separate threads. Possibly with further paralellization of both.
 - Improvements of map/rendering buffer layering logic.
-- 2D filters (blurs, color manipulation, etc.) to apply on maps.
 
 ## Project structure
 
@@ -190,9 +208,9 @@ Static analysis for cross translation units.
 
 ### Source code, graphics assets, music annotations
 
-**Software Rendered Demo Engine In C**
+**Software Rendering Demo Engine In C**
 
-Copyright (C) 2024 https://github.com/aurb
+Copyright (C) 2024 Andrzej Urbaniak
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

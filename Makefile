@@ -1,5 +1,5 @@
-# Software Rendered Demo Engine In C
-# Copyright (C) 2024 https://github.com/aurb
+# Software Rendering Demo Engine In C
+# Copyright (C) 2024 Andrzej Urbaniak
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,10 +37,12 @@ CUSTOM_FLAGS := -DDISPLAY_W=1200 -DDISPLAY_H=900
 #CUSTOM_FLAGS := -DFULL_DESKTOP=1
 # Build engine to log music annotations
 #CUSTOM_FLAGS += -DLOG_ANNOTATIONS
+# Build examples for dynamic analysis (each example exits after rendering single frame)
+#CUSTOM_FLAGS += -DRUN_ONE_FRAME
 
 CFLAGS := -std=c99 -I$(ENGINE)/$(INC) $(CUSTOM_FLAGS) -Wall -Wformat -Werror=format-security #Universal compilation flags
 DEBUG_FLAGS := -O0 -g
-RELEASE_FLAGS := -O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -DNDEBUG
+RELEASE_FLAGS := -O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -DNDEBUG -march=haswell
 LDFLAGS := 
 LDLIBS := -lm -lSDL2 -lSDL2main -lSDL2_image -lSDL2_mixer
 .PHONY: clean dirs release debug run scan-build llvm-build ast-build database ctu-index all

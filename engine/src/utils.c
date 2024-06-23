@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,23 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include "engine_types.h"
-#include <stdio.h>
-#include <string.h>
-RGB_PIXEL utils_RGB_2_pix(VEC_3 *c) {
-    return (RGB_PIXEL)(255.*(*c)[2])<<16 | (RGB_PIXEL)(255.*(*c)[1])<<8 | (RGB_PIXEL)(255.*(*c)[0]);
-}
-
-FLOAT utils_pix_2_L(RGB_PIXEL p) {
-    return (FLOAT)((p&0x000000FF)+2*((p>>8)&0x000000FF)+((p>>16)&0x000000FF))/1024.;
-}
-
-VEC_3* utils_blend_RGB(VEC_3 *c, VEC_3 *a, VEC_3 *b, FLOAT p) {
-    for (INT i=0; i < 3; i++) {
-        (*c)[i] = (*a)[i]*p + (*b)[i]*(1-p);
-    }
-    return c;
-}
+#include "engine.h"
 
 #define FILE_PATH_MAX_LENGTH 256
 char call_path[FILE_PATH_MAX_LENGTH];

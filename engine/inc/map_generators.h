@@ -14,18 +14,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#ifndef VECTOR_SCENE_H
-#define VECTOR_SCENE_H
+#ifndef MAP_GENERATORS_H
+#define MAP_GENERATORS_H
 
 #include "engine_types.h"
 
-SCENE_3D* scene_3d(RENDER_BUFFER* render_buf, INT max_objects, INT max_lights);
-void scene_3d_free(SCENE_3D* scene);
-void scene_3d_camera_set_settings(SCENE_3D *scene, CAMERA_SETTINGS *settings);
-void scene_3d_lighting_set_settings(SCENE_3D *scene, GLOBAL_LIGHT_SETTINGS *settings);
-void scene_3d_add_root_container(SCENE_3D *scene, OBJ_3D_CONTAINER *root);
-void scene_3d_add_child_container(OBJ_3D_CONTAINER *parent, OBJ_3D_CONTAINER *child);
-void scene_3d_transform_and_light(SCENE_3D* scene);
-void scene_3d_render(SCENE_3D* scene);
+void map_generator_init();
+void map_generator_cleanup();
+
+void ARGB_MAP_plasma_pattern(ARGB_MAP *map, GRADIENT *g, FLOAT scale, FLOAT s2xA, FLOAT s2xT, FLOAT xo, FLOAT s2yA, FLOAT s2yT, FLOAT yo);
+
+void ARGB_MAP_vertical_pattern(ARGB_MAP *map, GRADIENT *g);
+void ARGB_MAP_horizontal_pattern(ARGB_MAP *map, GRADIENT *g);
+void ARGB_MAP_diagonal_pattern(ARGB_MAP *map, GRADIENT *g);
+void ARGB_MAP_radial_pattern(ARGB_MAP *map, GRADIENT *g, INT x0, INT y0);
+void ARGB_MAP_xor_pattern(ARGB_MAP *map, GRADIENT *g);
 
 #endif

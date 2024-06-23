@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,18 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "engine.h"
-#include "v_geometry.h"
-#include "v_obj_3d.h"
-#include "v_obj_3d_container.h"
-#include "v_obj_3d_generators.h"
-#include "v_rasterizer.h"
-#include "v_lighting.h"
-#include "v_scene.h"
-#include "maps.h"
 
 #define V1_COUNT (18*10)
 #define V2_COUNT (6*10)
@@ -46,12 +35,12 @@ int main(int argc, char *argv[])
     OBJ_3D_CONTAINER* toroid_cont[TOROID_CNT];
     OBJ_3D_CONTAINER* light_markers[LIGHT_CNT];
     OBJ_3D_CONTAINER* lights[LIGHT_CNT];
-    VEC_3 color_orange = {1.0, 0.5, 0.25};
-    VEC_3 color_aquamarine = {0.5, 1.0, 0.25};
-    VEC_3 color_light_blue = {0.25, 0.5, 1.0};
-    VEC_3 color_red = {1.0, 0.0, 0.0};
-    VEC_3 color_green = {0.0, 1.0, 0.0};
-    VEC_3 color_blue = {0.0, 0.0, 1.0};
+    COLOR color_orange = {.a = 1., .r = 0.25, .g = 0.5, .b = 1.0};
+    COLOR color_aquamarine = {.a = 1., .r = 0.25, .g = 1.0, .b = 0.5};
+    COLOR color_light_blue = {.a = 1., .r = 1.0, .g = 0.5, .b = 0.25};
+    COLOR color_red = {.a = 1., .r = 0.0, .g = 0.0, .b = 1.0};
+    COLOR color_green = {.a = 1., .r = 0.0, .g = 1.0, .b = 0.0};
+    COLOR color_blue = {.a = 1., .r = 1.0, .g = 0.0, .b = 0.0};
 
     printf("3D Lighting example\n");
     printf("Shading switch Gouraud/flat: %c\n", SHADING_SWITCH_KEY);
@@ -72,8 +61,8 @@ int main(int argc, char *argv[])
     //Configure scene-wide lighting parameters
     scene_3d_lighting_set_settings(scene, &(GLOBAL_LIGHT_SETTINGS){
         .enabled = true,
-        .ambient = {0.1, 0.1, 0.1},
-        .directional = {0.4, 0.4, 0.4},
+        .ambient = {.a = 1., .r = 0.1, .g = 0.1, .b = 0.1},
+        .directional = {.a = 1., .r = 0.4, .g = 0.4, .b = 0.4},
         .direction = COMPOUND_4(*norm_v(&(VEC_4){1.0, 1.0, 0.0, 1.0})),
         .attenuation = 0.2}
     );
@@ -109,28 +98,28 @@ int main(int argc, char *argv[])
     //Initialize all renderable objects properties
     obj_3d_set_properties(light_markers[0]->obj, &(OBJ_3D){
         .type = SOLID_UNSHADED,
-        .surface_color = COMPOUND_3(color_blue) });
+        .surface_color = color_blue });
     obj_3d_set_properties(light_markers[1]->obj, &(OBJ_3D){
         .type = SOLID_UNSHADED,
-        .surface_color = COMPOUND_3(color_red) });
+        .surface_color = color_red });
     obj_3d_set_properties(light_markers[2]->obj, &(OBJ_3D){
         .type = SOLID_UNSHADED,
-        .surface_color = COMPOUND_3(color_green) });
+        .surface_color = color_green });
     obj_3d_set_properties(toroid_cont[0]->obj, &(OBJ_3D){
         .type = obj_3d_type,
-        .surface_color = COMPOUND_3(color_orange),
+        .surface_color = color_orange,
         .specular_power = 5.0 });
     obj_3d_set_properties(toroid_cont[1]->obj, &(OBJ_3D){
         .type = obj_3d_type,
-        .surface_color = COMPOUND_3(color_aquamarine),
+        .surface_color = color_aquamarine,
         .specular_power = 5.0 });
     obj_3d_set_properties(toroid_cont[2]->obj, &(OBJ_3D){
         .type = obj_3d_type,
-        .surface_color = COMPOUND_3(color_light_blue),
+        .surface_color = color_light_blue,
         .specular_power = 5.0 });
 
     while (!quit_flag) {
-        render_buffer_fill(display_buffer(), &(VEC_3){0.5, 0.5, 0.5});
+        RENDER_BUFFER_fill(display_buffer(), &(COLOR){.r = 0.5, .g = 0.5, .b = 0.5});
 
         // Move the lights
         light_move_t += (light_move_active ? 1. : 0.)*display_last_frame_interval();

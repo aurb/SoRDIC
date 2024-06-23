@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,17 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "engine.h"
-#include "v_geometry.h"
-#include "v_obj_3d.h"
-#include "v_obj_3d_container.h"
-#include "v_obj_3d_generators.h"
-#include "v_scene.h"
-#include "annotations.h"
-#include "transitions.h"
 
 #define ASSETS_DIR "assets/"
 #define ANNOTATIONS "tranceverse.ant"
@@ -37,15 +27,24 @@ int main(int argc, char *argv[])
     bool quit_flag = false;
     FLOAT omega_x = 24.0, omega_y = 36.0, omega_z = 48.0; // object angular velocities (constant)
     //object colors
-    VEC_3 obj_colors[] = {{0.772, 0.227, 0.349}, {0.623, 0.773, 0.227}, {0.227, 0.773, 0.651}, {0.376, 0.227, 0.773}};
+    COLOR obj_colors[] = {
+        {.a = 1., .r = 0.349, .g = 0.227, .b = 0.772},
+        {.a = 1., .r = 0.227, .g = 0.773, .b = 0.623},
+        {.a = 1., .r = 0.651, .g = 0.773, .b = 0.227},
+        {.a = 1., .r = 0.773, .g = 0.227, .b = 0.376}};
     //background colors
-    VEC_3 back_colors[] = {{0.15, 0.1, 0.2}, {0.2, 0.15, 0.1}, {0.1, 0.2, 0.15}};
+    COLOR back_colors[] = {
+        {.a = 1., .r = 0.2, .g = 0.1, .b = 0.15},
+        {.a = 1., .r = 0.1, .g = 0.15, .b = 0.2},
+        {.a = 1., .r = 0.15, .g = 0.2, .b = 0.1}};
     //background flash colors
-    #define FF (2.0) //Flash factor
-    VEC_3 flash_colors[] = {{FF*0.15, FF*0.1, FF*0.2}, {FF*0.2, FF*0.15, FF*0.1}, {FF*0.1, FF*0.2, FF*0.15}};
+    COLOR flash_colors[] = {
+        {.a = 1., .r = 0.4, .g = 0.2, .b = 0.3},
+        {.a = 1., .r = 0.2, .g = 0.3, .b = 0.4},
+        {.a = 1., .r = 0.3, .g = 0.4, .b = 0.2}};
     //Lighting colors
-    VEC_3 color_directional = {1.0, 1.0, 1.0};
-    VEC_3 color_ambient = {0.0, 0.0, 0.0};
+    COLOR color_directional = {.a = 1., .r = 1.0, .g = 1.0, .b = 1.0};
+    COLOR color_ambient = {.a = 1., .r = 0.0, .g = 0.0, .b = 0.0};
 
     SCENE_3D *scene = NULL;
     OBJ_3D_CONTAINER *container = NULL;
@@ -67,8 +66,8 @@ int main(int argc, char *argv[])
         .roll = 0.0,    .fov = 90.0,    .near_z = 0.5,    .far_z = 15.0});
     scene_3d_lighting_set_settings(scene, &(GLOBAL_LIGHT_SETTINGS){
         .enabled = true,
-        .ambient = COMPOUND_3(color_ambient),
-        .directional = COMPOUND_3(color_directional),
+        .ambient = color_ambient,
+        .directional = color_directional,
         .direction = COMPOUND_4(*norm_v(&(VEC_4){0.0, 0.0, 1.0, 1.0}))}
     );
 
@@ -106,7 +105,7 @@ int main(int argc, char *argv[])
             0.0, 0.0, 0.0, beat_s, beat_s, beat_s);
         scene_3d_transform_and_light(scene);
 
-        VEC_3 color;
+        COLOR color;
         //Decide type of the background color change.
         //depending on part of the music (annotation value of channel 0)
         //The color itself depends on the annotation value of channel 2
@@ -116,21 +115,21 @@ int main(int argc, char *argv[])
         if (bcpi < 0 || bcpi == 3) bcpi = 0;
         if ((annotations_last_v()[0] & 1) && annotations_last_v()[0] != 7) {
             //"Flash" background color change
-            utils_blend_RGB((VEC_3*)color, (VEC_3*)back_colors[bcci], (VEC_3*)flash_colors[bcci],
+            color = *COLOR_blend(&back_colors[bcci], &flash_colors[bcci],
                             transit_cube_high(t - annotations_last_t()[2], 0.3));
         } else {
             //"Blend" to the new background color from the previous one.
-            utils_blend_RGB((VEC_3*)color, (VEC_3*)back_colors[bcci], (VEC_3*)back_colors[bcpi],
+            color = *COLOR_blend(&back_colors[bcci], &back_colors[bcpi],
                             transit_cube_high(t - annotations_last_t()[2], 0.3));
         }
-        render_buffer_fill(display_buffer(), (VEC_3*)color);
+        RENDER_BUFFER_fill(display_buffer(), &color);
 
         //Change object color depending on annotation value of channel 1
         INT occi = annotations_last_v()[1]%4; //Current object color index
         INT ocpi = annotations_prev_v()[1]%4; //Previous object color index
-        utils_blend_RGB((VEC_3*)color, (VEC_3*)obj_colors[occi], (VEC_3*)obj_colors[ocpi],
+        color = *COLOR_blend(&obj_colors[occi], &obj_colors[ocpi],
                         transit_cube_high(t - annotations_last_t()[1], 0.3));
-        obj_3d_set_surface_color(container->obj, (VEC_3*)color);
+        obj_3d_set_surface_color(container->obj, &color);
 
         scene_3d_render(scene);
         display_show(0);

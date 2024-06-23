@@ -14,18 +14,18 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#ifndef VECTOR_SCENE_H
-#define VECTOR_SCENE_H
+#ifndef COLOR_H
+#define COLOR_H
 
 #include "engine_types.h"
 
-SCENE_3D* scene_3d(RENDER_BUFFER* render_buf, INT max_objects, INT max_lights);
-void scene_3d_free(SCENE_3D* scene);
-void scene_3d_camera_set_settings(SCENE_3D *scene, CAMERA_SETTINGS *settings);
-void scene_3d_lighting_set_settings(SCENE_3D *scene, GLOBAL_LIGHT_SETTINGS *settings);
-void scene_3d_add_root_container(SCENE_3D *scene, OBJ_3D_CONTAINER *root);
-void scene_3d_add_child_container(OBJ_3D_CONTAINER *parent, OBJ_3D_CONTAINER *child);
-void scene_3d_transform_and_light(SCENE_3D* scene);
-void scene_3d_render(SCENE_3D* scene);
+ARGB_PIXEL COLOR_to_ARGB_PIXEL(COLOR *o);
+FLOAT ARGB_PIXEL_to_l(ARGB_PIXEL p);
+COLOR* COLOR_scale(COLOR *a, FLOAT s);
+COLOR* COLOR_blend(COLOR *a, COLOR *b, FLOAT p);
+COLOR* COLOR_add(COLOR *a, COLOR *b);
+COLOR* COLOR_add_sat(COLOR *a, COLOR *b);
+COLOR* COLOR_mul(COLOR *a, COLOR *b);
+COLOR* COLOR_hsl_to_rgb(COLOR *o);
 
 #endif

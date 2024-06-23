@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,18 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "engine.h"
-#include "v_rasterizer.h"
-#include "v_geometry.h"
-#include "v_obj_3d.h"
-#include "v_obj_3d_container.h"
-#include "v_obj_3d_generators.h"
-#include "v_lighting.h"
-#include "v_scene.h"
-#include "maps.h"
 
 #define CYCLOID_1_KEY '1'
 #define CYCLOID_2_KEY '2'
@@ -52,9 +41,9 @@ int main(int argc, char *argv[])
     FLOAT a_x, a_y, a_z; //object initial angles
     FLOAT p_x, p_y, p_z; //object position
     OBJ_3D_TYPE render_3d_type = SOLID_UNSHADED;
-    VEC_3 color_blue = {1.0, 0.5, 0.25};
-    VEC_3 color_white = {0.8, 0.8, 0.8};
-    VEC_3 wire_color = {1.0, 1.0, 1.0};
+    COLOR color_blue = {.a = 1., .r = 0.25, .g = 0.5, .b = 1.0};
+    COLOR color_white = {.a = 1., .r = 0.8, .g = 0.8, .b = 0.8};
+    COLOR wire_color = {.a = 1., .r = 1.0, .g = 1.0, .b = 1.0};
     const int OBJECTS_COUNT = 4;
     OBJ_3D *objects[OBJECTS_COUNT];
     SCENE_3D *scene = NULL;
@@ -83,8 +72,8 @@ int main(int argc, char *argv[])
     //Configure scene-wide lighting
     scene_3d_lighting_set_settings(scene, &(GLOBAL_LIGHT_SETTINGS){
         .enabled = true,
-        .ambient = {0.2, 0.2, 0.2},
-        .directional = COMPOUND_3(color_white),
+        .ambient = {.a = 1., .r = 0.2, .g = 0.2, .b = 0.2},
+        .directional = color_white,
         .direction = COMPOUND_4(*norm_v(&(VEC_4){0.0, 0.0, 1.0, 1.0})) });
     scene_container = obj_3d_container(NULL, 0);
 
@@ -190,15 +179,15 @@ interesting presets
     for (i = 0; i < OBJECTS_COUNT; i++) {
         obj_3d_set_properties((OBJ_3D*)objects[i], &(OBJ_3D){
             .type = render_3d_type,
-            .surface_color = COMPOUND_3(color_blue),
-            .wireframe_color = COMPOUND_3(wire_color),
+            .surface_color = color_blue,
+            .wireframe_color = wire_color,
             .specular_power = 1.0,
             .wireframe_on = wireframe_on}
         );
     }
 
     while (!quit_flag) {
-        render_buffer_fill(display_buffer(), &(VEC_3){0.1, 0.2, 0.3});
+        RENDER_BUFFER_fill(display_buffer(), &(COLOR){.a = 0., .r = 0.1, .g = 0.2, .b = 0.3});
 
         //rotate and perspective transform the cube
         obj_3d_container_set_transform(

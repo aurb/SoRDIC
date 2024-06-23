@@ -14,18 +14,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#ifndef VECTOR_SCENE_H
-#define VECTOR_SCENE_H
+#ifndef GRADIENT_H
+#define GRADIENT_H
 
 #include "engine_types.h"
 
-SCENE_3D* scene_3d(RENDER_BUFFER* render_buf, INT max_objects, INT max_lights);
-void scene_3d_free(SCENE_3D* scene);
-void scene_3d_camera_set_settings(SCENE_3D *scene, CAMERA_SETTINGS *settings);
-void scene_3d_lighting_set_settings(SCENE_3D *scene, GLOBAL_LIGHT_SETTINGS *settings);
-void scene_3d_add_root_container(SCENE_3D *scene, OBJ_3D_CONTAINER *root);
-void scene_3d_add_child_container(OBJ_3D_CONTAINER *parent, OBJ_3D_CONTAINER *child);
-void scene_3d_transform_and_light(SCENE_3D* scene);
-void scene_3d_render(SCENE_3D* scene);
+void GRADIENT_add_point(GRADIENT *g, FLOAT t, COLOR *color);
+COLOR *GRADIENT_get_value(GRADIENT *g, FLOAT t);
+
+DISCRETE_GRADIENT *DISCRETE_GRADIENT_alloc(INT length);
+void DISCRETE_GRADIENT_from_GRADIENT(DISCRETE_GRADIENT *dg, GRADIENT *g);
+void DISCRETE_GRADIENT_free(DISCRETE_GRADIENT *dg);
 
 #endif

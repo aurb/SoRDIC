@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 #define SCREEN_SDL
 
 #include "engine_types.h"
-#include "render_buffer.h"
 
 #define FULLSCREEN_SWITCH_MODE (1)
 #define FULLSCREEN_CURRENT_MODE (2)

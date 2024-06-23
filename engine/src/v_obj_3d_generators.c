@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,13 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdlib.h>
-#include <math.h>
-
-#include "engine_types.h"
-#include "v_geometry.h"
-#include "v_obj_3d.h"
-#include "v_obj_3d_generators.h"
+#include "engine.h"
 
 //Internal functions forward declarations
 VEC_4* stub_surface(FLOAT u, FLOAT v);
@@ -28,11 +22,11 @@ VEC_4* cycloid_surface(CYCLOID *cld, FLOAT u, FLOAT v);
 VEC_4* toroid_uv(FLOAT u, FLOAT v);
 static FLOAT surf_params[5];
 
-OBJ_3D * obj_3d_light(VEC_3 *color) {
+OBJ_3D * obj_3d_light(COLOR *color) {
     OBJ_3D *obj = obj_3d(1, 0);
     obj->type = POINT_LIGHTS;
     copy_v4(&obj->vertices[0].root, &(VEC_4){0.0, 0.0, 0.0, 1.0});
-    copy_v3(&obj->vertices[0].color_surf, color);
+    obj->vertices[0].color_surf = *color;
     return obj;
 }
 
@@ -351,8 +345,8 @@ OBJ_3D * obj_3d_uv_mesh(MESH_TYPE type, SURFACE_WRAP wrap_surface, INT uv, INT v
             VI = obj->faces[i].vi[j];
             //Account for faces that are crossing map seam.
             //This is a measure for objects with map wrapping.
-            obj->faces[i].t[j].u = fmod(obj->vertex_s[VI].u*ut, 1.0) + obj->faces[i].bc[j].u;
-            obj->faces[i].t[j].v = fmod(obj->vertex_s[VI].v*vt, 1.0) + obj->faces[i].bc[j].v;
+            obj->faces[i].t[j].u = FMOD(obj->vertex_s[VI].u*ut, (FLOAT)1.0) + obj->faces[i].bc[j].u;
+            obj->faces[i].t[j].v = FMOD(obj->vertex_s[VI].v*vt, (FLOAT)1.0) + obj->faces[i].bc[j].v;
         }
     }
 

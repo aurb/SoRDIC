@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,13 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <math.h>
-#include <stdlib.h>
-
-#include "engine_types.h"
-#include "v_rasterizer.h"
-#include "v_geometry.h"
-#include "v_obj_3d_container.h"
+#include "engine.h"
 
 SCENE_3D* scene_3d(RENDER_BUFFER* render_buf, INT max_objects, INT max_lights) {
     SCENE_3D *scene = calloc(1, sizeof(SCENE_3D));
@@ -39,8 +33,8 @@ SCENE_3D* scene_3d(RENDER_BUFFER* render_buf, INT max_objects, INT max_lights) {
     scene->camera.far_z = 50.0;
     scene->light_settings.enabled = false;
     scene->light_settings.attenuation = 0.0;
-    copy_v3(&scene->light_settings.ambient, &(VEC_3){0.0, 0.0, 0.0});
-    copy_v3(&scene->light_settings.directional, &(VEC_3){0.0, 0.0, 0.0});
+    scene->light_settings.ambient = (COLOR){.r = 0.0, .g = 0.0, .b = 0.0};
+    scene->light_settings.directional = (COLOR){.r = 0.0, .g = 0.0, .b = 0.0};
     copy_v4(&scene->light_settings.direction, &(VEC_4){0.0, 0.0, 0.0, 1.0});
     copy_v4(&scene->light_settings.direction_in_camera_space, &(VEC_4){0.0, 0.0, 0.0, 1.0});
     scene->camera.roll = 0.0;
@@ -71,10 +65,7 @@ void scene_3d_camera_set_settings(SCENE_3D *scene, CAMERA_SETTINGS *settings) {
 }
 
 void scene_3d_lighting_set_settings(SCENE_3D *scene, GLOBAL_LIGHT_SETTINGS *settings) {
-    scene->light_settings.enabled = settings->enabled;
-    scene->light_settings.attenuation = settings->attenuation;
-    copy_v3(&scene->light_settings.ambient, &settings->ambient);
-    copy_v3(&scene->light_settings.directional, &settings->directional);
+    scene->light_settings = *settings;
     copy_v4(&scene->light_settings.direction, &settings->direction);
 }
 

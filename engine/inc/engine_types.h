@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,11 +21,46 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef float FLOAT;
 typedef int32_t INT;
-typedef uint32_t RGB_PIXEL;
+typedef uint32_t UINT;
+
+typedef float FLOAT;
+#define FMOD fmodf
+#define FABS fabsf
+/*
+typedef double FLOAT;
+#define FMOD fmod
+#define FABS fabs
+*/
+
+typedef uint32_t ARGB_PIXEL;
 typedef uint32_t Z_PIXEL;
 typedef uint32_t BUMP_PIXEL;
+
+#define FRACT_SHIFT 16
+#define FRACT_MASK ((1<<16)-1)
+
+#define A_SHIFT 24
+#define R_SHIFT 16
+#define G_SHIFT 8
+#define B_SHIFT 0
+
+#define A_MASK 0xFF000000
+#define R_MASK 0x00FF0000
+#define G_MASK 0x0000FF00
+#define B_MASK 0x000000FF
+#define LSB8_MASK 0x000000FF
+
+//Overflow bits from each component
+#define R_OVFL 0x01000000
+#define G_OVFL 0x00010000
+#define B_OVFL 0x00000100
+
+#define ARGB_PIXEL_ALPHA(P) ((P)>>24)
+#define ARGB_PIXEL_RED(P) (((P)>>16)&0x000000FF)
+#define ARGB_PIXEL_GREEN(P) (((P)>>8)&0x000000FF)
+#define ARGB_PIXEL_BLUE(P) ((P)&0x000000FF)
+
 #define Z_BUFFER_ON 1
 #define Z_BUFFER_OFF 0
 //#define Z_BUFFER_MAX (65535) //2^16-1
@@ -34,6 +69,7 @@ typedef uint32_t BUMP_PIXEL;
 
 #define MAX_FACE_VERTICES (6)
 
+#define TWOPI (6.283185307)
 #define PI (3.141592654)
 #define PI_2 (1.570796327)
 #define PI_4 (0.785398163)
@@ -187,7 +223,28 @@ typedef struct {
     FLOAT hold_time; //key hold time (0 for PRESSED)
 } EVENT;
 
-typedef FLOAT VEC_3[3];
+typedef struct { //at any given time only r, g and b have to filled/valid
+    FLOAT a; //alpha channel
+    //Rules for alpha channel:
+    //1. When two COLORs are blended: blend A just like other components (r, g, b)
+    //2. When two COLORs are added: A = (A1 + A2)/2
+    //3. When COLOR is scaled: do not change A
+    FLOAT r, g, b; //red, green blue
+    FLOAT h, s, l; //hue, saturation, lightness
+} COLOR;
+
+typedef struct {
+    FLOAT t[20]; //control points coordinates
+    COLOR color[20]; //control points colors
+    COLOR background; //color used if t coordinates don't reach 0.0 or 1.0
+    INT count; //number of stops used
+} GRADIENT;
+
+typedef struct {
+    ARGB_PIXEL *pixval; //gradient precalculated values
+    INT length; //number of precalculated values
+} DISCRETE_GRADIENT;
+
 typedef FLOAT VEC_4[4];
 typedef FLOAT MAT_4_4[4][4]; //Transform matrix type for transforming 3D coordinates
 /*
@@ -198,9 +255,13 @@ typedef FLOAT MAT_4_4[4][4]; //Transform matrix type for transforming 3D coordin
 typedef INT PROJECTION_COORD[3];
 
 typedef struct {
-    RGB_PIXEL *data;
+    //Alpha channel by default is set to 0 for RENDER_BUFFERs and
+    //ARGB_MAPs used a rasterization targets.
+    //Alpha channel is set to 255 for ARGB_MAPs holding textures without alpha channel
+    //Alpha channel is set between 0-255 for ARGB_MAPs holding textures with alpha channel
+    ARGB_PIXEL *data;
     INT width, height, height_with_margin;
-} RGB_MAP;
+} ARGB_MAP;
 
 typedef struct {
     Z_PIXEL *data;
@@ -214,18 +275,10 @@ typedef struct {
 } BUMP_MAP;
 
 typedef struct {
-    RGB_MAP *rgb; //pixels buffer
+    ARGB_MAP *map; //pixels buffer
     Z_MAP *z; //z buffer
     INT width, height;
 } RENDER_BUFFER;
-
-typedef struct {
-    RGB_PIXEL *gradient;
-    INT gradient_size;
-    INT *sin1, *sin2_x, *sin2_y; //sine tables
-    INT sin_size; //size of each sine table
-    INT xo, yo;
-} PLASMA_DATA;
 
 typedef struct {
     FLOAT u;
@@ -243,10 +296,10 @@ typedef struct {
     VEC_4 normal_root; //Vertex normal in root space
     VEC_4 normal_camera; //Vertex normal in camera space
     VEC_4 light; //normalized light vector
-    VEC_3 color_surf; //surface color, assigned by user
+    COLOR color_surf; //surface color, assigned by user
     //REMARK: for texture mapped objects color_surf is not used.
-    VEC_3 color_diff; //diffuse lighting component
-    VEC_3 color_spec; //specular lighting component
+    COLOR color_diff; //diffuse lighting component
+    COLOR color_spec; //specular lighting component
     PROJECTION_COORD projection; //perspective projected coordinates
     INT avcnt; //count of adjacent vertices
     //TODO: avi should be preferably allocated dynamically...
@@ -262,10 +315,10 @@ typedef struct {
     MAP_COORD rc[MAX_FACE_VERTICES]; //Reflection/mul/add map coordinates set 1, [0, map_width/height] map range.
     VEC_4 normal_root; //Face normal in root space
     VEC_4 normal_camera; //Face normal in camera space
-    VEC_3 color_surf; //surface color, assigned by user
+    COLOR color_surf; //surface color, assigned by user
     //REMARK: for texture mapped objects color_surf is not used.
-    VEC_3 color_diff; //diffuse lighting component
-    VEC_3 color_spec; //specular lighting component
+    COLOR color_diff; //diffuse lighting component
+    COLOR color_spec; //specular lighting component
 } FACE;
 
 typedef struct {
@@ -286,13 +339,13 @@ typedef struct {
     OBJ_3D_TYPE type;
 
     //The color of the whole object. This can be overloaded by FACE.color or VERTEX.color
-    VEC_3 surface_color;
-    VEC_3 wireframe_color;
-    RGB_MAP *base_map;
+    COLOR surface_color;
+    COLOR wireframe_color;
+    ARGB_MAP *base_map;
     BUMP_MAP *bump_map;
-    RGB_MAP *mul_map;
-    RGB_MAP *add_map;
-    RGB_MAP *reflection_map;
+    ARGB_MAP *mul_map;
+    ARGB_MAP *add_map;
+    ARGB_MAP *reflection_map;
 } OBJ_3D;
 
 typedef struct {
@@ -306,8 +359,8 @@ typedef struct {
 
 typedef struct {
     bool enabled;
-    VEC_3 ambient; //ambient light color
-    VEC_3 directional; // Directional light color (only 1 per scene)
+    COLOR ambient; //ambient light color
+    COLOR directional; // Directional light color (only 1 per scene)
     VEC_4 direction; // Directional light vector (only 1 per scene)
     VEC_4 direction_in_camera_space; // Directional light vector (only 1 per scene)
     FLOAT attenuation; //point lights attenuation

@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,11 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include "engine_types.h"
-#include "v_geometry.h"
+#include "engine.h"
 
 #define VEC_4_CNT (64) //power of 2
 VEC_4 *vec_4_buf;
@@ -68,12 +64,6 @@ MAT_4_4 *store_m(MAT_4_4 *src) {
 
 VEC_4 *copy_v4(VEC_4 *dst, VEC_4 *src) {
     for(INT i=0; i<4; i++)
-        (*dst)[i] = (*src)[i];
-    return dst;
-}
-
-VEC_3 *copy_v3(VEC_3 *dst, VEC_3 *src) {
-    for(INT i=0; i<3; i++)
         (*dst)[i] = (*src)[i];
     return dst;
 }

@@ -1,5 +1,5 @@
-/*  Software Rendered Demo Engine In C
-    Copyright (C) 2024 https://github.com/aurb
+/*  Software Rendering Demo Engine In C
+    Copyright (C) 2024 Andrzej Urbaniak
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,12 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-
 #include "engine.h"
-#include "v_rasterizer.h"
 
 #define MOVE_LEFT_KEY 'a'
 #define MOVE_RIGHT_KEY 'd'
@@ -57,13 +52,13 @@ int main(int argc, char *argv[])
     vr_set_render_buffer(display_buffer());
 
     while (!quit_flag) {
-        render_buffer_zero(display_buffer());
+        RENDER_BUFFER_zero(display_buffer());
 
         for (int i=0; i<LPF; i++) {
             x0 = rand()%display_buffer()->width+cx+px;    y0 = rand()%display_buffer()->height+cy+py;
             x1 = rand()%display_buffer()->width+cx+px;    y1 = rand()%display_buffer()->height+cy+py;
             line_flat(x0, y0, x1, y1,
-                &(VEC_3){(rand()&255)/255., (rand()&255)/255., (rand()&255)/255.}
+                &(COLOR){.r = (rand()&255)/255., .g = (rand()&255)/255., .b = (rand()&255)/255.}
             );
         }
         display_show(0);
