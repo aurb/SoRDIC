@@ -33,25 +33,6 @@ void Z_MAP_clear(Z_MAP *map);
 void Z_MAP_copy(Z_MAP *dst, Z_MAP *src);
 void Z_MAP_free(Z_MAP* map);
 
-void ARGB_MAP_multiplex(ARGB_MAP *dst, ARGB_MAP **src, ARGB_MAP *mask);
-
-void ARGB_MAP_fade_dither_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *map, FLOAT p);
-void ARGB_MAP_fade_mul_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *map, FLOAT p);
-void ARGB_MAP_blend_dither_global(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1, FLOAT p);
-void ARGB_MAP_blend_mul_global(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1, FLOAT p);
-
-void ARGB_MAP_fade_dither_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map, ARGB_MAP *p);
-void ARGB_MAP_fade_mul_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map, ARGB_MAP *p);
-void ARGB_MAP_blend_dither_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1, ARGB_MAP *p);
-void ARGB_MAP_blend_mul_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1, ARGB_MAP *p);
-
-void ARGB_MAP_fade_dither_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map, FLOAT f, ARGB_MAP *p);
-void ARGB_MAP_fade_mul_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map, FLOAT f, ARGB_MAP *p);
-void ARGB_MAP_blend_dither_f_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1, FLOAT f, ARGB_MAP *p);
-void ARGB_MAP_blend_mul_f_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1, FLOAT f, ARGB_MAP *p);
-
-void ARGB_MAP_sat_add(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1);
-
 ARGB_MAP *ARGB_MAP_read_image(const char * const map_filename, INT u_wrap_margin);
 BUMP_MAP *BUMP_MAP_from_ARGB_MAP(ARGB_MAP* in_map, FLOAT margin);
 

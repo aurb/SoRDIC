@@ -1,6 +1,6 @@
 # SoRDIC
 
-**Software Rendering Demo Engine In C v0.51**
+**Software Rendering Demo Engine In C v0.53**
 
 https://github.com/aurb/SoRDIC
 

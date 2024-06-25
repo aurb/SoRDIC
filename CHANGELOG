@@ -28,3 +28,5 @@ From v0.51 to v0.52
     - Global OR per-pixel filter-specific parameters.
     - RGB copy OR alpha-blended output on background map.
 - Improvements to polygon rasterization code.
+
+From v0.52 to v0.53

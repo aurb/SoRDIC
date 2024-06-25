@@ -30,7 +30,7 @@ EXAMPLES_BIN := $(EXAMPLES_SRC:$(EXAMPLES)/$(SRC)/%.c=$(EXAMPLES)/%)
 EXAMPLES_BC := $(EXAMPLES_SRC:$(EXAMPLES)/$(SRC)/%.c=$(EXAMPLES)/$(CLANG)/%.bc)
 EXAMPLES_AST := $(EXAMPLES_SRC:$(EXAMPLES)/$(SRC)/%.c=$(EXAMPLES)/$(CLANG)/%.ast)
 
-CC = gcc
+CC = clang
 # Build examples to render on window with dimensions (DISPLAY_W, DISPLAY_H)
 CUSTOM_FLAGS := -DDISPLAY_W=1200 -DDISPLAY_H=900
 # Build examples to render on full screen with current(desktop) resolution
@@ -42,7 +42,7 @@ CUSTOM_FLAGS := -DDISPLAY_W=1200 -DDISPLAY_H=900
 
 CFLAGS := -std=c99 -I$(ENGINE)/$(INC) $(CUSTOM_FLAGS) -Wall -Wformat -Werror=format-security #Universal compilation flags
 DEBUG_FLAGS := -O0 -g
-RELEASE_FLAGS := -O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -DNDEBUG -march=haswell
+RELEASE_FLAGS := -O3 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -DNDEBUG -march=haswell
 LDFLAGS := 
 LDLIBS := -lm -lSDL2 -lSDL2main -lSDL2_image -lSDL2_mixer
 .PHONY: clean dirs release debug run scan-build llvm-build ast-build database ctu-index all

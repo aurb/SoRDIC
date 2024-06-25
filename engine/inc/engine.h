@@ -32,6 +32,7 @@
 #include "gradient.h"
 #include "map.h"
 #include "map_generators.h"
+#include "map_layering.h"
 #include "map_filters.h"
 #include "render_buffer.h"
 #include "transitions.h"
