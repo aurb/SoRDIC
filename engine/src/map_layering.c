@@ -21,7 +21,7 @@ void ARGB_MAP_multiplex(ARGB_MAP *out, ARGB_MAP **in, ARGB_MAP *mask) {
         out->data[offs] = in[mask->data[offs]]->data[offs];
 }
 
-void ARGB_MAP_fade_dither_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
+void ARGB_MAP_fade_dither_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *in,
                             FLOAT p) {
     p = p < 0.0 ? 0.0 : (p > 1.0 ? 1.0 : p);
     ARGB_PIXEL pixval = COLOR_to_ARGB_PIXEL(color);
@@ -30,11 +30,11 @@ void ARGB_MAP_fade_dither_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
     INT r = 0;
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         r = LIMIT_255(PRN(seed));
-        out->data[offs] = r < blend ? map->data[offs] : (r == 255 && blend == 255 ? map->data[offs] : pixval);
+        out->data[offs] = r < blend ? in->data[offs] : (r == 255 && blend == 255 ? in->data[offs] : pixval);
     }
 }
 
-void ARGB_MAP_fade_mul_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
+void ARGB_MAP_fade_mul_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *in,
                          FLOAT p) {
     p = p < 0.0 ? 0.0 : (p > 1.0 ? 1.0 : p);
     ARGB_PIXEL pixval = COLOR_to_ARGB_PIXEL(color);
@@ -44,7 +44,7 @@ void ARGB_MAP_fade_mul_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
     g0 = ARGB_PIXEL_GREEN(pixval);
     b0 = ARGB_PIXEL_BLUE(pixval);
     for (INT offs = 0; offs < out->height*out->width; offs++) {
-        pixval = ((ARGB_PIXEL*)map->data)[offs];
+        pixval = ((ARGB_PIXEL*)in->data)[offs];
         r1 = ARGB_PIXEL_RED(pixval);
         g1 = ARGB_PIXEL_GREEN(pixval);
         b1 = ARGB_PIXEL_BLUE(pixval);
@@ -54,7 +54,7 @@ void ARGB_MAP_fade_mul_global(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
     }
 }
 
-void ARGB_MAP_blend_dither_global(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
+void ARGB_MAP_blend_dither_global(ARGB_MAP *out, ARGB_MAP *in0, ARGB_MAP *in1,
                              FLOAT p) {
     p = p < 0.0 ? 0.0 : (p > 1.0 ? 1.0 : p);
     //INT seed = engine_run_stats().frames; //better at full framerate
@@ -63,21 +63,21 @@ void ARGB_MAP_blend_dither_global(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
     INT r = 0;
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         r = LIMIT_255(PRN(seed));
-        out->data[offs] = (r < blend ? map1 : (r == 255 && blend == 255 ? map1 : map0))->data[offs];
+        out->data[offs] = (r < blend ? in1 : (r == 255 && blend == 255 ? in1 : in0))->data[offs];
     }
 }
 
-void ARGB_MAP_blend_mul_global(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
+void ARGB_MAP_blend_mul_global(ARGB_MAP *out, ARGB_MAP *in0, ARGB_MAP *in1,
                           FLOAT p) {
     p = p < 0.0 ? 0.0 : (p > 1.0 ? 1.0 : p);
     ARGB_PIXEL r0, g0, b0, r1, g1, b1, pixval;
     INT pfa = p*255.99;
     for (INT offs = 0; offs < out->height*out->width; offs++) {
-        pixval = ((ARGB_PIXEL*)map0->data)[offs];
+        pixval = ((ARGB_PIXEL*)in0->data)[offs];
         r0 = ARGB_PIXEL_RED(pixval);
         g0 = ARGB_PIXEL_GREEN(pixval);
         b0 = ARGB_PIXEL_BLUE(pixval);
-        pixval = ((ARGB_PIXEL*)map1->data)[offs];
+        pixval = ((ARGB_PIXEL*)in1->data)[offs];
         r1 = ARGB_PIXEL_RED(pixval);
         g1 = ARGB_PIXEL_GREEN(pixval);
         b1 = ARGB_PIXEL_BLUE(pixval);
@@ -87,7 +87,7 @@ void ARGB_MAP_blend_mul_global(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
     }
 }
 
-void ARGB_MAP_fade_dither_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
+void ARGB_MAP_fade_dither_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *in,
                                 ARGB_MAP *p) {
     ARGB_PIXEL pixval = COLOR_to_ARGB_PIXEL(color), a;
     INT seed = (engine_run_stats().frames%7) * 1000;
@@ -95,11 +95,11 @@ void ARGB_MAP_fade_dither_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         r = LIMIT_255(PRN(seed));
         a = p->data[offs]>>24;
-        out->data[offs] = r < a ? map->data[offs] : (r == 255 && a == 255 ? map->data[offs] : pixval);
+        out->data[offs] = r < a ? in->data[offs] : (r == 255 && a == 255 ? in->data[offs] : pixval);
     }
 }
 
-void ARGB_MAP_fade_mul_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
+void ARGB_MAP_fade_mul_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *in,
                              ARGB_MAP *p) {
     ARGB_PIXEL pixval = COLOR_to_ARGB_PIXEL(color);
     ARGB_PIXEL r0, g0, b0, r1, g1, b1, pfa;
@@ -108,7 +108,7 @@ void ARGB_MAP_fade_mul_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
     b0 = ARGB_PIXEL_BLUE(pixval);
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         pfa = ARGB_PIXEL_ALPHA( ((ARGB_PIXEL*)p->data)[offs] );
-        pixval = ((ARGB_PIXEL*)map->data)[offs];
+        pixval = ((ARGB_PIXEL*)in->data)[offs];
         r1 = ARGB_PIXEL_RED(pixval);
         g1 = ARGB_PIXEL_GREEN(pixval);
         b1 = ARGB_PIXEL_BLUE(pixval);
@@ -118,7 +118,7 @@ void ARGB_MAP_fade_mul_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
     }
 }
 
-void ARGB_MAP_blend_dither_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
+void ARGB_MAP_blend_dither_per_pixel(ARGB_MAP *out, ARGB_MAP *in0, ARGB_MAP *in1,
                                  ARGB_MAP *p) {
     ARGB_PIXEL a;
     //INT seed = engine_run_stats().frames; //better at full framerate
@@ -127,20 +127,20 @@ void ARGB_MAP_blend_dither_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *ma
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         a = p->data[offs]>>24;
         r = LIMIT_255(PRN(seed));
-        out->data[offs] = (r < a ? map1 : (r == 255 && a == 255 ? map1 : map0))->data[offs];
+        out->data[offs] = (r < a ? in1 : (r == 255 && a == 255 ? in1 : in0))->data[offs];
     }
 }
 
-void ARGB_MAP_blend_mul_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
+void ARGB_MAP_blend_mul_per_pixel(ARGB_MAP *out, ARGB_MAP *in0, ARGB_MAP *in1,
                               ARGB_MAP *p) {
     ARGB_PIXEL r0, g0, b0, r1, g1, b1, pfa, pixval;
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         pfa = ARGB_PIXEL_ALPHA( ((ARGB_PIXEL*)p->data)[offs] );
-        pixval = ((ARGB_PIXEL*)map0->data)[offs];
+        pixval = ((ARGB_PIXEL*)in0->data)[offs];
         r0 = ARGB_PIXEL_RED(pixval);
         g0 = ARGB_PIXEL_GREEN(pixval);
         b0 = ARGB_PIXEL_BLUE(pixval);
-        pixval = ((ARGB_PIXEL*)map1->data)[offs];
+        pixval = ((ARGB_PIXEL*)in1->data)[offs];
         r1 = ARGB_PIXEL_RED(pixval);
         g1 = ARGB_PIXEL_GREEN(pixval);
         b1 = ARGB_PIXEL_BLUE(pixval);
@@ -150,7 +150,7 @@ void ARGB_MAP_blend_mul_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
     }
 }
 
-void ARGB_MAP_fade_dither_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
+void ARGB_MAP_fade_dither_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *in,
                                   FLOAT f, ARGB_MAP *p) {
     ARGB_PIXEL pixval = COLOR_to_ARGB_PIXEL(color);
     INT ff = f*257.99; //fixed-point f
@@ -160,11 +160,11 @@ void ARGB_MAP_fade_dither_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         pfa = ff*(p->data[offs]>>24);
         r = LIMIT_65535(PRN(seed));
-        out->data[offs] = r < pfa ? map->data[offs] : (r == 65535 && pfa == 65535 ? map->data[offs] : pixval);
+        out->data[offs] = r < pfa ? in->data[offs] : (r == 65535 && pfa == 65535 ? in->data[offs] : pixval);
     }
 }
 
-void ARGB_MAP_fade_mul_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
+void ARGB_MAP_fade_mul_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *in,
                                FLOAT f, ARGB_MAP *p) {
     ARGB_PIXEL pixval = COLOR_to_ARGB_PIXEL(color);
     ARGB_PIXEL r0, g0, b0, r1, g1, b1;
@@ -175,7 +175,7 @@ void ARGB_MAP_fade_mul_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
     b0 = ARGB_PIXEL_BLUE(pixval);
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         pfa = ff*ARGB_PIXEL_ALPHA( ((ARGB_PIXEL*)p->data)[offs] ) >> 8;
-        pixval = ((ARGB_PIXEL*)map->data)[offs];
+        pixval = ((ARGB_PIXEL*)in->data)[offs];
         r1 = ARGB_PIXEL_RED(pixval);
         g1 = ARGB_PIXEL_GREEN(pixval);
         b1 = ARGB_PIXEL_BLUE(pixval);
@@ -185,7 +185,7 @@ void ARGB_MAP_fade_mul_f_per_pixel(ARGB_MAP *out, COLOR* color, ARGB_MAP *map,
     }
 }
 
-void ARGB_MAP_blend_dither_f_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
+void ARGB_MAP_blend_dither_f_per_pixel(ARGB_MAP *out, ARGB_MAP *in0, ARGB_MAP *in1,
                                    FLOAT f, ARGB_MAP *p) {
     INT ff = f*257.99; //fixed-point f
     INT pfa = 0; //f*p[pixel]
@@ -195,22 +195,22 @@ void ARGB_MAP_blend_dither_f_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         pfa = ff*(p->data[offs]>>24);
         r = LIMIT_65535(PRN(seed));
-        out->data[offs] = (r < pfa ? map1 : (r == 65535 && pfa == 65535 ? map1 : map0))->data[offs];
+        out->data[offs] = (r < pfa ? in1 : (r == 65535 && pfa == 65535 ? in1 : in0))->data[offs];
     }
 }
 
-void ARGB_MAP_blend_mul_f_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1,
+void ARGB_MAP_blend_mul_f_per_pixel(ARGB_MAP *out, ARGB_MAP *in0, ARGB_MAP *in1,
                                 FLOAT f, ARGB_MAP *p) {
     INT ff = f*257.99; //fixed-point f
     INT pfa = 0; //f*p[pixel]
     ARGB_PIXEL r0, g0, b0, r1, g1, b1, pixval;
     for (INT offs = 0; offs < out->height*out->width; offs++) {
         pfa = ff*ARGB_PIXEL_ALPHA( ((ARGB_PIXEL*)p->data)[offs] ) >> 8;
-        pixval = ((ARGB_PIXEL*)map0->data)[offs];
+        pixval = ((ARGB_PIXEL*)in0->data)[offs];
         r0 = ARGB_PIXEL_RED(pixval);
         g0 = ARGB_PIXEL_GREEN(pixval);
         b0 = ARGB_PIXEL_BLUE(pixval);
-        pixval = ((ARGB_PIXEL*)map1->data)[offs];
+        pixval = ((ARGB_PIXEL*)in1->data)[offs];
         r1 = ARGB_PIXEL_RED(pixval);
         g1 = ARGB_PIXEL_GREEN(pixval);
         b1 = ARGB_PIXEL_BLUE(pixval);
@@ -225,15 +225,15 @@ void ARGB_MAP_blend_mul_f_per_pixel(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map
  * Addition starts at position (x, y) in a
  * Buffers have to have same dimensions.
  */
-void ARGB_MAP_sat_add(ARGB_MAP *out, ARGB_MAP *map0, ARGB_MAP *map1) {
+void ARGB_MAP_sat_add(ARGB_MAP *out, ARGB_MAP *in0, ARGB_MAP *in1) {
     INT offs; /** Offset for traversing buffers*/
     ARGB_PIXEL sum;
-    if (map0->width != map1->width || map0->height != map1->height) {
+    if (in0->width != in1->width || in0->height != in1->height) {
         return;
     }
-    for (offs = 0; offs < map0->width * map0->height; offs++) {
+    for (offs = 0; offs < in0->width * in0->height; offs++) {
         /** Add all components */
-        sum = (map0->data[offs]&0x00FEFEFF) + (map1->data[offs]&0x00FEFEFF);
+        sum = (in0->data[offs]&0x00FEFEFF) + (in1->data[offs]&0x00FEFEFF);
         /** Saturate sums of each component */
         if (sum & 0x01000000) {
             if (sum & 0x00010000) {
