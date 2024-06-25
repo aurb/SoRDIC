@@ -102,23 +102,25 @@ int main(int argc, char *argv[])
         FLOAT xo1 = 0.194*(cos(anim_t*TWOPI/4.8)+1.);
         FLOAT yo2 = 0.248*(cos(anim_t*TWOPI/3.15)+1.);
         FLOAT xo2 = 0.107*(sin(anim_t*TWOPI/3.66)+1.);
+        INT cx = display_buffer()->width*(0.3*cos(anim_t*TWOPI/5.0));
+        INT cy = display_buffer()->height*(0.3*sin(anim_t*TWOPI/5.0));
 
         // Layer 1 - Background
         ARGB_MAP_copy(display_buffer()->map, background_map);
 
         // Layer 2 - Semi-translucent XOR pattern blending in and out.
         FLOAT xor_t = FMOD(anim_t, (FLOAT)9.0);
-        FLOAT f = 0.6*(xor_t < 3.0 ? xor_t/3.0 : (xor_t < 6.0 ? 1.0-(xor_t - 3.0)/3.0 : 0.0));
-        ARGB_MAP_blend_dither_f_per_pixel(display_buffer()->map, display_buffer()->map, xor_map, f, xor_map);
+        FLOAT f = 1.0*(xor_t < 3.0 ? xor_t/3.0 : (xor_t < 6.0 ? 1.0-(xor_t - 3.0)/3.0 : 0.0));
+        ARGB_MAP_blend_mul_f_per_pixel(display_buffer()->map, 0, 0, display_buffer()->map, xor_map, f, xor_map);
 
         // Layer 3 - Background plasma
         ARGB_MAP_plasma_pattern(plasma_map, &plasma_gradient2, 4.0, 0.183, 0.225, xo1, 0.292, 0.341, yo1);
-        ARGB_MAP_fade_mul_per_pixel(plasma_map, &black, plasma_map, alpha_map);
-        ARGB_MAP_sat_add(display_buffer()->map, display_buffer()->map, plasma_map);
+        ARGB_MAP_fade_mul_per_pixel(plasma_map, 0, 0, &black, plasma_map, alpha_map);
+        ARGB_MAP_sat_add(display_buffer()->map, cx, cy, display_buffer()->map, plasma_map);
 
         // Layer 4 - Foreground plasma
         ARGB_MAP_plasma_pattern(plasma_map, &plasma_gradient1, 4.0, 0.25, 0.56, xo2, 0.167, 0.167, yo2);
-        ARGB_MAP_blend_mul_per_pixel(display_buffer()->map, display_buffer()->map, plasma_map, plasma_map);
+        ARGB_MAP_blend_mul_per_pixel(display_buffer()->map, 0, 0, display_buffer()->map, plasma_map, plasma_map);
 
         // Show everything on the display.
         display_show(0);
