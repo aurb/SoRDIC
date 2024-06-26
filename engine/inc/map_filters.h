@@ -24,8 +24,8 @@ void map_filters_cleanup();
 
 #define MAX_EDGE_WIDTH (15)
 
-void ARGB_MAP_green_gradient_global_copy(ARGB_MAP *out, ARGB_MAP *in, GRADIENT *g, const INT p);
-void ARGB_MAP_green_gradient_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *in, GRADIENT *g, const INT p);
+void ARGB_MAP_green_gradient_global_copy(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, GRADIENT *g, const INT p);
+void ARGB_MAP_green_gradient_global_blend(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, GRADIENT *g, const INT p);
 
 void ARGB_MAP_green_gradient_per_pixel_copy(ARGB_MAP *out, ARGB_MAP *in, GRADIENT *g, ARGB_MAP *p);
 void ARGB_MAP_green_gradient_per_pixel_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *in, GRADIENT *g, ARGB_MAP *p);
