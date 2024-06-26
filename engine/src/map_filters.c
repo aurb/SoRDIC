@@ -273,7 +273,7 @@ void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
         return;
     }
     else if (p == 1) {
-        ARGB_MAP_blend_mul_global(out, 0, 0, bg, fg, 1.0);
+        ARGB_MAP_blend_mul_global(out, 0, 0, fg, 1.0);
         return;
     }
     mul_f[0] = 1<<FRACT_SHIFT;
@@ -586,7 +586,7 @@ void ARGB_MAP_blur_1xn_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
         return;
     }
     else if (p == 1) {
-        ARGB_MAP_blend_mul_global(out, 0, 0, bg, fg, 1.0);
+        ARGB_MAP_blend_mul_global(out, 0, 0, fg, 1.0);
         return;
     }
     mul_f[0] = 1<<FRACT_SHIFT;
@@ -729,7 +729,7 @@ void ARGB_MAP_pixelize_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, const IN
         return;
     }
     else if (p == 1) {
-        ARGB_MAP_blend_mul_global(out, 0, 0, bg, fg, 1.0);
+        ARGB_MAP_blend_mul_global(out, 0, 0, fg, 1.0);
         return;
     }
 
@@ -813,7 +813,7 @@ void ARGB_MAP_rand_pixelize_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg,
         return;
     }
     else if (l_min == 1 && l_max == 1 && h_min == 1 && h_max == 1) {
-        ARGB_MAP_blend_mul_global(out, 0, 0, bg, fg, 1.0);
+        ARGB_MAP_blend_mul_global(out, 0, 0, fg, 1.0);
         return;
     }
 

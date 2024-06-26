@@ -21,21 +21,21 @@
 
 void ARGB_MAP_multiplex(ARGB_MAP *dst, ARGB_MAP **src, ARGB_MAP *mask);
 
-void ARGB_MAP_fade_dither_global(ARGB_MAP *out, INT out_x, INT out_y, COLOR* color, ARGB_MAP *in, FLOAT p);
-void ARGB_MAP_fade_mul_global(ARGB_MAP *out, INT out_x, INT out_y, COLOR* color, ARGB_MAP *in, FLOAT p);
-void ARGB_MAP_blend_dither_global(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in0, ARGB_MAP *in1, FLOAT p);
-void ARGB_MAP_blend_mul_global(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in0, ARGB_MAP *in1, FLOAT p);
+void ARGB_MAP_fade_dither_global(ARGB_MAP *map, COLOR* color, FLOAT p);
+void ARGB_MAP_fade_mul_global(ARGB_MAP *map, COLOR* color, FLOAT p);
+void ARGB_MAP_blend_dither_global(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, FLOAT p);
+void ARGB_MAP_blend_mul_global(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, FLOAT p);
 
-void ARGB_MAP_fade_dither_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, COLOR* color, ARGB_MAP *in, ARGB_MAP *p);
-void ARGB_MAP_fade_mul_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, COLOR* color, ARGB_MAP *in, ARGB_MAP *p);
-void ARGB_MAP_blend_dither_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in0, ARGB_MAP *in1, ARGB_MAP *p);
-void ARGB_MAP_blend_mul_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in0, ARGB_MAP *in1, ARGB_MAP *p);
+void ARGB_MAP_fade_dither_per_pixel(ARGB_MAP *map, COLOR* color, ARGB_MAP *p);
+void ARGB_MAP_fade_mul_per_pixel(ARGB_MAP *map, COLOR* color, ARGB_MAP *p);
+void ARGB_MAP_blend_dither_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, ARGB_MAP *p);
+void ARGB_MAP_blend_mul_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, ARGB_MAP *p);
 
-void ARGB_MAP_fade_dither_f_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, COLOR* color, ARGB_MAP *in, FLOAT f, ARGB_MAP *p);
-void ARGB_MAP_fade_mul_f_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, COLOR* color, ARGB_MAP *in, FLOAT f, ARGB_MAP *p);
-void ARGB_MAP_blend_dither_f_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in0, ARGB_MAP *in1, FLOAT f, ARGB_MAP *p);
-void ARGB_MAP_blend_mul_f_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in0, ARGB_MAP *in1, FLOAT f, ARGB_MAP *p);
+void ARGB_MAP_fade_dither_f_per_pixel(ARGB_MAP *map, COLOR* color, FLOAT f, ARGB_MAP *p);
+void ARGB_MAP_fade_mul_f_per_pixel(ARGB_MAP *map, COLOR* color, FLOAT f, ARGB_MAP *p);
+void ARGB_MAP_blend_dither_f_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, FLOAT f, ARGB_MAP *p);
+void ARGB_MAP_blend_mul_f_per_pixel(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, FLOAT f, ARGB_MAP *p);
 
-void ARGB_MAP_sat_add(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in0, ARGB_MAP *in1);
+void ARGB_MAP_sat_add(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in);
 
 #endif
