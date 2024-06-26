@@ -40,21 +40,21 @@ void ARGB_MAP_green_gradient_global_copy(ARGB_MAP *out, ARGB_MAP *in, GRADIENT *
 
     for(y=0, offs=0; y < in->height-p; y++) {
         for(x=0; x < in->width-p; x++, offs++) {
-            l00 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs]);
-            l10 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs+p]);
-            l01 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs+p*in->width]);
+            l00 = ARGB_PIXEL_GREEN(in->data[offs]);
+            l10 = ARGB_PIXEL_GREEN(in->data[offs+p]);
+            l01 = ARGB_PIXEL_GREEN(in->data[offs+p*in->width]);
 
             dl = l10 + l01 - 2*l00;
             if (dl < 0) dl = -dl;
-            ((ARGB_PIXEL*)out->data)[offs] = map_filter_dg->pixval[dl];
+            out->data[offs] = map_filter_dg->pixval[dl];
         }
         for(; x < in->width; x++, offs++) {
-            ((ARGB_PIXEL*)out->data)[offs] = map_filter_dg->pixval[0];
+            out->data[offs] = map_filter_dg->pixval[0];
         }
     }
     for(; y < in->height; y++) {
         for(x = 0; x < in->width; x++, offs++) {
-            ((ARGB_PIXEL*)out->data)[offs] = map_filter_dg->pixval[0];
+            out->data[offs] = map_filter_dg->pixval[0];
         }
     }
 }
@@ -72,9 +72,9 @@ void ARGB_MAP_green_gradient_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP 
 
     for(y=0, offs=0; y < in->height-p; y++) {
         for(x=0; x < in->width-p; x++, offs++) {
-            l00 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs]);
-            l10 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs+p]);
-            l01 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs+p*in->width]);
+            l00 = ARGB_PIXEL_GREEN(in->data[offs]);
+            l10 = ARGB_PIXEL_GREEN(in->data[offs+p]);
+            l01 = ARGB_PIXEL_GREEN(in->data[offs+p*in->width]);
 
             dl = l10 + l01 - 2*l00; //TODO: should the discrete gradient used be 512 elements long?
             if (dl < 0) dl = -dl;
@@ -85,23 +85,23 @@ void ARGB_MAP_green_gradient_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP 
                 Rf = (ARGB_PIXEL_RED(pixval)*Ae >> 8) << R_SHIFT;
                 Gf = (ARGB_PIXEL_GREEN(pixval)*Ae >> 8) << G_SHIFT;
                 Bf = (ARGB_PIXEL_BLUE(pixval)*Ae >> 8) << B_SHIFT;
-                pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                pixval = bg->data[offs];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Ae) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Ae) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Ae) >> 8) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
         for(; x < in->width; x++, offs++) {
-            ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+            out->data[offs] = bg->data[offs];
         }
     }
     for(; y < in->height; y++) {
         for(x = 0; x < in->width; x++, offs++) {
-            ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+            out->data[offs] = bg->data[offs];
         }
     }
 }
@@ -122,25 +122,25 @@ void ARGB_MAP_green_gradient_per_pixel_copy(ARGB_MAP *out, ARGB_MAP *in, GRADIEN
             pa = ARGB_PIXEL_ALPHA(((ARGB_PIXEL*)p->data)[offs]);
             da = pa >> 4; //max edge thickness (for pa==255) is MAX_EDGE_WIDTH
             if (offs+da*in->width < in_buf_size) {
-                l00 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs]);
-                l10 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs+da]);
-                l01 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs+da*in->width]);
+                l00 = ARGB_PIXEL_GREEN(in->data[offs]);
+                l10 = ARGB_PIXEL_GREEN(in->data[offs+da]);
+                l01 = ARGB_PIXEL_GREEN(in->data[offs+da*in->width]);
 
                 dl = l10 + l01 - 2*l00;
                 if (dl < 0) dl = -dl;
-                ((ARGB_PIXEL*)out->data)[offs] = map_filter_dg->pixval[dl*pa >> 8];
+                out->data[offs] = map_filter_dg->pixval[dl*pa >> 8];
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = map_filter_dg->pixval[0];
+                out->data[offs] = map_filter_dg->pixval[0];
             }
         }
         for(; x < in->width; x++, offs++) {
-            ((ARGB_PIXEL*)out->data)[offs] = map_filter_dg->pixval[0];
+            out->data[offs] = map_filter_dg->pixval[0];
         }
     }
     for(; y < in->height; y++) {
         for(x = 0; x < in->width; x++, offs++) {
-            ((ARGB_PIXEL*)out->data)[offs] = map_filter_dg->pixval[0];
+            out->data[offs] = map_filter_dg->pixval[0];
         }
     }
 }
@@ -162,40 +162,40 @@ void ARGB_MAP_green_gradient_per_pixel_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_M
             pa = ARGB_PIXEL_ALPHA(((ARGB_PIXEL*)p->data)[offs]);
             da = pa >> 4; //max edge thickness (for pa==255) is MAX_EDGE_WIDTH
             if (offs+da*in->width < in_buf_size) {
-                l00 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs]);
-                l10 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs+da]);
-                l01 = ARGB_PIXEL_GREEN(((ARGB_PIXEL*)in->data)[offs+da*in->width]);
+                l00 = ARGB_PIXEL_GREEN(in->data[offs]);
+                l10 = ARGB_PIXEL_GREEN(in->data[offs+da]);
+                l01 = ARGB_PIXEL_GREEN(in->data[offs+da*in->width]);
 
                 dl = l10 + l01 - 2*l00;
                 if (dl < 0) dl = -dl;
-                //((ARGB_PIXEL*)out->data)[offs] = map_filter_dg->pixval[dl*pa >> 8];
+                //out->data[offs] = map_filter_dg->pixval[dl*pa >> 8];
                 pixval = map_filter_dg->pixval[dl*pa >> 8];
                 Ae = ARGB_PIXEL_ALPHA(pixval);
                 if (Ae > 0) {
                     Rf = (ARGB_PIXEL_RED(pixval)*Ae >> 8) << R_SHIFT;
                     Gf = (ARGB_PIXEL_GREEN(pixval)*Ae >> 8) << G_SHIFT;
                     Bf = (ARGB_PIXEL_BLUE(pixval)*Ae >> 8) << B_SHIFT;
-                    pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                    pixval = bg->data[offs];
                     Rb = (ARGB_PIXEL_RED(pixval)*(255-Ae) >> 8) << R_SHIFT;
                     Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Ae) >> 8) << G_SHIFT;
                     Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Ae) >> 8) << B_SHIFT;
-                    ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                    out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
                 }
                 else {
-                    ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                    out->data[offs] = bg->data[offs];
                 }
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
         for(; x < in->width; x++, offs++) {
-            ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+            out->data[offs] = bg->data[offs];
         }
     }
     for(; y < in->height; y++) {
         for(x = 0; x < in->width; x++, offs++) {
-            ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+            out->data[offs] = bg->data[offs];
         }
     }
 }
@@ -218,44 +218,44 @@ void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, ARGB_MAP *in, const INT p) {
     for(y = 0, offs = 0; y < in->height; y++) {
         r = g = b = 0;
         for(x = 0; x < rp; x++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs+x];
+            pixval = in->data[offs+x];
             r += ARGB_PIXEL_RED(pixval);
             g += ARGB_PIXEL_GREEN(pixval);
             b += ARGB_PIXEL_BLUE(pixval);
         }
         for(x = 0; x < lp+1; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs+rp];
+            pixval = in->data[offs+rp];
             r += ARGB_PIXEL_RED(pixval);
             g += ARGB_PIXEL_GREEN(pixval);
             b += ARGB_PIXEL_BLUE(pixval);
             rb = (r*mul_f >> FRACT_SHIFT) << R_SHIFT;
             gb = (g*mul_f >> FRACT_SHIFT) << G_SHIFT;
             bb = (b*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            ((ARGB_PIXEL*)out->data)[offs] = rb | gb | bb;
+            out->data[offs] = rb | gb | bb;
         }
         for(x = lp+1; x < in->width-rp; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs+rp];
+            pixval = in->data[offs+rp];
             r += ARGB_PIXEL_RED(pixval);
             g += ARGB_PIXEL_GREEN(pixval);
             b += ARGB_PIXEL_BLUE(pixval);
-            pixval = ((ARGB_PIXEL*)in->data)[offs-(lp+1)];
+            pixval = in->data[offs-(lp+1)];
             r -= ARGB_PIXEL_RED(pixval);
             g -= ARGB_PIXEL_GREEN(pixval);
             b -= ARGB_PIXEL_BLUE(pixval);
             rb = (r*mul_f >> FRACT_SHIFT) << R_SHIFT;
             gb = (g*mul_f >> FRACT_SHIFT) << G_SHIFT;
             bb = (b*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            ((ARGB_PIXEL*)out->data)[offs] = rb | gb | bb;
+            out->data[offs] = rb | gb | bb;
         }
         for(x = in->width-rp; x < in->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs-(lp+1)];
+            pixval = in->data[offs-(lp+1)];
             r -= ARGB_PIXEL_RED(pixval);
             g -= ARGB_PIXEL_GREEN(pixval);
             b -= ARGB_PIXEL_BLUE(pixval);
             rb = (r*mul_f >> FRACT_SHIFT) << R_SHIFT;
             gb = (g*mul_f >> FRACT_SHIFT) << G_SHIFT;
             bb = (b*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            ((ARGB_PIXEL*)out->data)[offs] = rb | gb | bb;
+            out->data[offs] = rb | gb | bb;
         }
     }
 }
@@ -285,14 +285,14 @@ void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
     for(y = 0, offs = 0; y < fg->height; y++) {
         a = r = g = b = 0;
         for(x = 0; x < rp; x++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs+x];
+            pixval = fg->data[offs+x];
             a += ARGB_PIXEL_ALPHA(pixval);
             r += ARGB_PIXEL_RED(pixval);
             g += ARGB_PIXEL_GREEN(pixval);
             b += ARGB_PIXEL_BLUE(pixval);
         }
         for(x = 0; x < lp+1; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs+rp];
+            pixval = fg->data[offs+rp];
             a += ARGB_PIXEL_ALPHA(pixval);
             r += ARGB_PIXEL_RED(pixval);
             g += ARGB_PIXEL_GREEN(pixval);
@@ -305,23 +305,23 @@ void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
                 Rf = (r*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
                 Gf = (g*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
                 Bf = (b*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                pixval = bg->data[offs];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
         for(x = lp+1; x < fg->width-rp; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs+rp];
+            pixval = fg->data[offs+rp];
             a += ARGB_PIXEL_ALPHA(pixval);
             r += ARGB_PIXEL_RED(pixval);
             g += ARGB_PIXEL_GREEN(pixval);
             b += ARGB_PIXEL_BLUE(pixval);
-            pixval = ((ARGB_PIXEL*)fg->data)[offs-(lp+1)];
+            pixval = fg->data[offs-(lp+1)];
             a -= ARGB_PIXEL_ALPHA(pixval);
             r -= ARGB_PIXEL_RED(pixval);
             g -= ARGB_PIXEL_GREEN(pixval);
@@ -334,18 +334,18 @@ void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
                 Rf = (r*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
                 Gf = (g*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
                 Bf = (b*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                pixval = bg->data[offs];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
         for(x = fg->width-rp; x < fg->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs-(lp+1)];
+            pixval = fg->data[offs-(lp+1)];
             a -= ARGB_PIXEL_ALPHA(pixval);
             r -= ARGB_PIXEL_RED(pixval);
             g -= ARGB_PIXEL_GREEN(pixval);
@@ -358,14 +358,14 @@ void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
                 Rf = (r*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
                 Gf = (g*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
                 Bf = (b*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                pixval = bg->data[offs];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
     }
@@ -389,12 +389,12 @@ void ARGB_MAP_blur_nx1_per_pixel_copy(ARGB_MAP *out, ARGB_MAP *in, ARGB_MAP *p) 
     }
 
     for(y = 0, offs = 0; y < in->height; y++) {
-        pixval = ((ARGB_PIXEL*)in->data)[offs];
+        pixval = in->data[offs];
         r_buf[0] = ARGB_PIXEL_RED(pixval);
         g_buf[0] = ARGB_PIXEL_GREEN(pixval);
         b_buf[0] = ARGB_PIXEL_BLUE(pixval);
         for(x = 1; x < in->width; x++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs+x];
+            pixval = in->data[offs+x];
             r_buf[x] = r_buf[x-1] + ARGB_PIXEL_RED(pixval);
             g_buf[x] = g_buf[x-1] + ARGB_PIXEL_GREEN(pixval);
             b_buf[x] = b_buf[x-1] + ARGB_PIXEL_BLUE(pixval);
@@ -413,10 +413,10 @@ void ARGB_MAP_blur_nx1_per_pixel_copy(ARGB_MAP *out, ARGB_MAP *in, ARGB_MAP *p) 
                 r = ((r_buf[rx]-r_buf[lx])*mf >> FRACT_SHIFT) << R_SHIFT;
                 g = ((g_buf[rx]-g_buf[lx])*mf >> FRACT_SHIFT) << G_SHIFT;
                 b = ((b_buf[rx]-b_buf[lx])*mf >> FRACT_SHIFT) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = r | g | b;
+                out->data[offs] = r | g | b;
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)in->data)[offs];
+                out->data[offs] = in->data[offs];
             }
         }
     }
@@ -449,13 +449,13 @@ void ARGB_MAP_blur_nx1_per_pixel_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg
     }
 
     for(y = 0, offs = 0; y < fg->height; y++) {
-        pixval = ((ARGB_PIXEL*)fg->data)[offs];
+        pixval = fg->data[offs];
         a_buf[0] = ARGB_PIXEL_ALPHA(pixval);
         r_buf[0] = ARGB_PIXEL_RED(pixval);
         g_buf[0] = ARGB_PIXEL_GREEN(pixval);
         b_buf[0] = ARGB_PIXEL_BLUE(pixval);
         for(x = 1; x < fg->width; x++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs+x];
+            pixval = fg->data[offs+x];
             a_buf[x] = a_buf[x-1] + ARGB_PIXEL_ALPHA(pixval);
             r_buf[x] = r_buf[x-1] + ARGB_PIXEL_RED(pixval);
             g_buf[x] = g_buf[x-1] + ARGB_PIXEL_GREEN(pixval);
@@ -479,14 +479,14 @@ void ARGB_MAP_blur_nx1_per_pixel_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg
                 Rf = ((r_buf[rx]-r_buf[lx])*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
                 Gf = ((g_buf[rx]-g_buf[lx])*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
                 Bf = ((b_buf[rx]-b_buf[lx])*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                pixval = bg->data[offs];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
     }
@@ -517,7 +517,7 @@ void ARGB_MAP_blur_1xn_global_copy(ARGB_MAP *out, ARGB_MAP *in, const INT p) {
 
     for(y = 0, offs = 0; y < bp; y++) {
         for(x = 0; x < in->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs];
+            pixval = in->data[offs];
             r[x] += ARGB_PIXEL_RED(pixval);
             g[x] += ARGB_PIXEL_GREEN(pixval);
             b[x] += ARGB_PIXEL_BLUE(pixval);
@@ -526,44 +526,44 @@ void ARGB_MAP_blur_1xn_global_copy(ARGB_MAP *out, ARGB_MAP *in, const INT p) {
 
     for(y = 0, offs = 0; y < tp+1; y++) {
         for(x = 0; x < in->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs+bp*in->width];
+            pixval = in->data[offs+bp*in->width];
             r[x] += ARGB_PIXEL_RED(pixval);
             g[x] += ARGB_PIXEL_GREEN(pixval);
             b[x] += ARGB_PIXEL_BLUE(pixval);
             rb = (r[x]*mul_f >> FRACT_SHIFT) << R_SHIFT;
             gb = (g[x]*mul_f >> FRACT_SHIFT) << G_SHIFT;
             bb = (b[x]*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            ((ARGB_PIXEL*)out->data)[offs] = rb | gb | bb;
+            out->data[offs] = rb | gb | bb;
         }
     }
 
     for(y = tp+1; y < in->height-bp; y++) {
         for(x = 0; x < in->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs+bp*in->width];
+            pixval = in->data[offs+bp*in->width];
             r[x] += ARGB_PIXEL_RED(pixval);
             g[x] += ARGB_PIXEL_GREEN(pixval);
             b[x] += ARGB_PIXEL_BLUE(pixval);
-            pixval = ((ARGB_PIXEL*)in->data)[offs-(tp+1)*in->width];
+            pixval = in->data[offs-(tp+1)*in->width];
             r[x] -= ARGB_PIXEL_RED(pixval);
             g[x] -= ARGB_PIXEL_GREEN(pixval);
             b[x] -= ARGB_PIXEL_BLUE(pixval);
             rb = (r[x]*mul_f >> FRACT_SHIFT) << R_SHIFT;
             gb = (g[x]*mul_f >> FRACT_SHIFT) << G_SHIFT;
             bb = (b[x]*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            ((ARGB_PIXEL*)out->data)[offs] = rb | gb | bb;
+            out->data[offs] = rb | gb | bb;
         }
     }
 
     for(y = in->height-bp; y < in->height; y++) {
         for(x = 0; x < in->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)in->data)[offs-(tp+1)*in->width];
+            pixval = in->data[offs-(tp+1)*in->width];
             r[x] -= ARGB_PIXEL_RED(pixval);
             g[x] -= ARGB_PIXEL_GREEN(pixval);
             b[x] -= ARGB_PIXEL_BLUE(pixval);
             rb = (r[x]*mul_f >> FRACT_SHIFT) << R_SHIFT;
             gb = (g[x]*mul_f >> FRACT_SHIFT) << G_SHIFT;
             bb = (b[x]*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            ((ARGB_PIXEL*)out->data)[offs] = rb | gb | bb;
+            out->data[offs] = rb | gb | bb;
         }
     }
 }
@@ -601,7 +601,7 @@ void ARGB_MAP_blur_1xn_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
 
     for(y = 0, offs = 0; y < bp; y++) {
         for(x = 0; x < fg->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs];
+            pixval = fg->data[offs];
             a[x] += ARGB_PIXEL_ALPHA(pixval);
             r[x] += ARGB_PIXEL_RED(pixval);
             g[x] += ARGB_PIXEL_GREEN(pixval);
@@ -611,7 +611,7 @@ void ARGB_MAP_blur_1xn_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
 
     for(y = 0, offs = 0; y < tp+1; y++) {
         for(x = 0; x < fg->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs+bp*fg->width];
+            pixval = fg->data[offs+bp*fg->width];
             a[x] += ARGB_PIXEL_ALPHA(pixval);
             r[x] += ARGB_PIXEL_RED(pixval);
             g[x] += ARGB_PIXEL_GREEN(pixval);
@@ -624,26 +624,26 @@ void ARGB_MAP_blur_1xn_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
                 Rf = (r[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
                 Gf = (g[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
                 Bf = (b[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                pixval = bg->data[offs];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
     }
 
     for(y = tp+1; y < fg->height-bp; y++) {
         for(x = 0; x < fg->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs+bp*fg->width];
+            pixval = fg->data[offs+bp*fg->width];
             a[x] += ARGB_PIXEL_ALPHA(pixval);
             r[x] += ARGB_PIXEL_RED(pixval);
             g[x] += ARGB_PIXEL_GREEN(pixval);
             b[x] += ARGB_PIXEL_BLUE(pixval);
-            pixval = ((ARGB_PIXEL*)fg->data)[offs-(tp+1)*fg->width];
+            pixval = fg->data[offs-(tp+1)*fg->width];
             a[x] -= ARGB_PIXEL_ALPHA(pixval);
             r[x] -= ARGB_PIXEL_RED(pixval);
             g[x] -= ARGB_PIXEL_GREEN(pixval);
@@ -656,21 +656,21 @@ void ARGB_MAP_blur_1xn_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
                 Rf = (r[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
                 Gf = (g[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
                 Bf = (b[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                pixval = bg->data[offs];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
     }
 
     for(y = fg->height-bp; y < fg->height; y++) {
         for(x = 0; x < fg->width; x++, offs++) {
-            pixval = ((ARGB_PIXEL*)fg->data)[offs-(tp+1)*fg->width];
+            pixval = fg->data[offs-(tp+1)*fg->width];
             a[x] -= ARGB_PIXEL_ALPHA(pixval);
             r[x] -= ARGB_PIXEL_RED(pixval);
             g[x] -= ARGB_PIXEL_GREEN(pixval);
@@ -683,14 +683,14 @@ void ARGB_MAP_blur_1xn_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
                 Rf = (r[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
                 Gf = (g[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
                 Bf = (b[x]*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                pixval = bg->data[offs];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                out->data[offs] = bg->data[offs];
             }
         }
     }
@@ -711,7 +711,7 @@ void ARGB_MAP_pixelize_copy(ARGB_MAP *out, ARGB_MAP *in, const INT p) {
     for (y = 0, offs = 0; y < in->height; y+=p) {
         for (x = 0; x < in->width; x+=p) {
             for (i = 0; i < p && x+i < in->width; i++) {
-                line_buf[x+i] = ((ARGB_PIXEL*)in->data)[offs+x];
+                line_buf[x+i] = in->data[offs+x];
             }
         }
         for (i = 0; i < p; i++, offs+=in->width) {
@@ -736,7 +736,7 @@ void ARGB_MAP_pixelize_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, const IN
     for (y = 0, offs = 0; y < fg->height; y+=p) {
         for (x = 0; x < fg->width; x+=p) {
             for (i = 0; i < p && x+i < fg->width; i++) {
-                line_buf[x+i] = ((ARGB_PIXEL*)fg->data)[offs+x];
+                line_buf[x+i] = fg->data[offs+x];
             }
         }
         for (i = 0; i < p; i++) {
@@ -747,14 +747,14 @@ void ARGB_MAP_pixelize_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, const IN
                     Rf = (ARGB_PIXEL_RED(pixval)*Af >> 8) << R_SHIFT;
                     Gf = (ARGB_PIXEL_GREEN(pixval)*Af >> 8) << G_SHIFT;
                     Bf = (ARGB_PIXEL_BLUE(pixval)*Af >> 8) << B_SHIFT;
-                    pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                    pixval = bg->data[offs];
                     Rb = (ARGB_PIXEL_RED(pixval)*(255-Af) >> 8) << R_SHIFT;
                     Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Af) >> 8) << G_SHIFT;
                     Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Af) >> 8) << B_SHIFT;
-                    ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                    out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
                 }
                 else {
-                    ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                    out->data[offs] = bg->data[offs];
                 }
             }
         }
@@ -785,7 +785,7 @@ void ARGB_MAP_rand_pixelize_copy(ARGB_MAP *out, ARGB_MAP *in,
             if (x+l > in->width)
                 l = in->width - x;
             for (i = 0; i < l; i++) {
-                line_buf[x+i] = ((ARGB_PIXEL*)in->data)[offs+x];
+                line_buf[x+i] = in->data[offs+x];
             }
         }
 
@@ -826,7 +826,7 @@ void ARGB_MAP_rand_pixelize_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg,
             if (x+l > fg->width)
                 l = fg->width - x;
             for (i = 0; i < l; i++) {
-                line_buf[x+i] = ((ARGB_PIXEL*)fg->data)[offs+x];
+                line_buf[x+i] = fg->data[offs+x];
             }
         }
 
@@ -844,14 +844,14 @@ void ARGB_MAP_rand_pixelize_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg,
                     Rf = (ARGB_PIXEL_RED(pixval)*Af >> 8) << R_SHIFT;
                     Gf = (ARGB_PIXEL_GREEN(pixval)*Af >> 8) << G_SHIFT;
                     Bf = (ARGB_PIXEL_BLUE(pixval)*Af >> 8) << B_SHIFT;
-                    pixval = ((ARGB_PIXEL*)bg->data)[offs];
+                    pixval = bg->data[offs];
                     Rb = (ARGB_PIXEL_RED(pixval)*(255-Af) >> 8) << R_SHIFT;
                     Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Af) >> 8) << G_SHIFT;
                     Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Af) >> 8) << B_SHIFT;
-                    ((ARGB_PIXEL*)out->data)[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                    out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
                 }
                 else {
-                    ((ARGB_PIXEL*)out->data)[offs] = ((ARGB_PIXEL*)bg->data)[offs];
+                    out->data[offs] = bg->data[offs];
                 }
             }
         }
