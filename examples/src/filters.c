@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
             RENDER_BUFFER_zero(tx_render_buffer);
             scene_3d_render(scene);
             RENDER_BUFFER_ARGB_MAP_copy(display_buffer(), background_map);
-            ARGB_MAP_green_gradient_global_blend(display_buffer()->map, 0, 0, tx_render_buffer->map, &edge_blend_gradient, MAX_EDGE_WIDTH);
+            ARGB_MAP_green_gradient_global_blend(display_buffer()->map, 0, 0, background_map, tx_render_buffer->map, &edge_blend_gradient, MAX_EDGE_WIDTH);
         }
         else if (mode == COPY_FILTER_2) {
             scene->render_buf = tx_render_buffer;

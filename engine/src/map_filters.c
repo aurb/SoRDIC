@@ -29,106 +29,167 @@ void map_filters_cleanup() {
     DISCRETE_GRADIENT_free(map_filter_dg);
 }
 
-#define PREAMBLE_OUT_IN                                                                               \
-    if (out->width != in->width || out->height != in->height)                                         \
+
+
+#define PREAMBLE_OUT_FG(M)                                                                          \
+    if (out_x >= out->width || out_y >= out->height || out_x+fg->width <= 0 || out_y+fg->height <= 0) \
         return;                                                                                       \
-    if (out_x >= out->width || out_y >= out->height || out_x+in->width <= 0 || out_y+in->height <= 0) \
-        return;                                                                                       \
-    ARGB_PIXEL *out_data = out->data, *out_back_data = out->data;                                     \
-    ARGB_PIXEL *in_data = in->data;                                                                   \
-    INT t_w = in->width < out->width ? in->width : out->width;                                        \
-    INT t_h = in->height < out->height ? in->height : out->height;                                    \
+    ARGB_PIXEL *out_no_f = out->data, *out_f = out->data; \
+    ARGB_PIXEL *fg_f = fg->data;                                                \
+    ARGB_PIXEL pixval; \
+    INT t_w = fg->width-M;                                        \
+    INT t_h = fg->height-M;                                    \
     INT x = 0, y = 0, ox = 0, oy = 0;                                                                 \
-    if (out_x < 0) { t_w += out_x; in_data += -out_x; }                                               \
-    if (out_y < 0) { t_h += out_y; in_data += -out_y*in->width; }                                     \
-    if (out_x > 0) { out_data += out_x;    ox = out_x;                                                \
+    if (out_x < 0) { t_w -= -out_x; fg_f += -out_x; }                   \
+    if (out_y < 0) { t_h -= -out_y; fg_f += -out_y*fg->width; }          \
+    if (out_x > 0) { out_f += out_x; ox = out_x;                                                \
         if (out_x + t_w > out->width) t_w = out->width - out_x; }                                     \
-    if (out_y > 0) { out_data += out_y*out->width;    oy = out_y;                                     \
+    if (out_y > 0) { out_f += out_y*out->width; oy = out_y;                                     \
         if (out_y + t_h > out->height) t_h = out->height - out_y; }
 
-#define PREAMBLE_OUT_IN_P                                                                             \
-    if (out->width != in->width || out->height != in->height)                                         \
+#define PREAMBLE_OUT_FG_P(M)                                                                          \
+    if (fg->width != p->width || fg->height != p->height)                                         \
         return;                                                                                       \
-    if (out_x >= out->width || out_y >= out->height || out_x+in->width <= 0 || out_y+in->height <= 0) \
+    if (out_x >= out->width || out_y >= out->height || out_x+fg->width <= 0 || out_y+fg->height <= 0) \
         return;                                                                                       \
-    ARGB_PIXEL *out_data = out->data, *out_back_data = out->data;                                     \
-    ARGB_PIXEL *in_data = in->data, *p_data = p->data;                                                \
-    INT t_w = in->width < out->width ? in->width : out->width;                                        \
-    INT t_h = in->height < out->height ? in->height : out->height;                                    \
+    ARGB_PIXEL *out_no_f = out->data, *out_f = out->data; \
+    ARGB_PIXEL *fg_f = fg->data, *p_f = p->data;                                                \
+    ARGB_PIXEL pixval; \
+    INT t_w = fg->width-M;                                        \
+    INT t_h = fg->height-M;                                    \
     INT x = 0, y = 0, ox = 0, oy = 0;                                                                 \
-    if (out_x < 0) { t_w += out_x; in_data += -out_x;           p_data += -out_x; }                   \
-    if (out_y < 0) { t_h += out_y; in_data += -out_y*in->width; p_data += -out_y*p->width; }          \
-    if (out_x > 0) { out_data += out_x;    ox = out_x;                                                \
+    if (out_x < 0) { t_w -= -out_x; fg_f += -out_x; p_f += -out_x; }                   \
+    if (out_y < 0) { t_h -= -out_y; fg_f += -out_y*fg->width; p_f += -out_y*p->width; }          \
+    if (out_x > 0) { out_f += out_x; ox = out_x;                                                \
         if (out_x + t_w > out->width) t_w = out->width - out_x; }                                     \
-    if (out_y > 0) { out_data += out_y*out->width;    oy = out_y;                                     \
+    if (out_y > 0) { out_f += out_y*out->width; oy = out_y;                                     \
         if (out_y + t_h > out->height) t_h = out->height - out_y; }
 
-#define NEXT_Y_OUT out_data += out->width;
-#define NEXT_Y_OUT_BACK out_back_data += out->width;
-#define NEXT_Y_IN in_data += in->width;
-#define NEXT_Y_P p_data += p->width;
 
-void ARGB_MAP_green_gradient_global_copy(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, GRADIENT *g, const INT p) {
-    PREAMBLE_OUT_IN;
+
+
+
+#define PREAMBLE_OUT_BG_FG(M)                                                                          \
+    if (out->width != bg->width || out->height != bg->height)                                         \
+        return;                                                                                       \
+    if (out_x >= out->width || out_y >= out->height || out_x+fg->width <= 0 || out_y+fg->height <= 0) \
+        return;                                                                                       \
+    ARGB_PIXEL *out_no_f = out->data, *out_f = out->data; \
+    ARGB_PIXEL *bg_no_f = bg->data, *bg_f = bg->data; \
+    ARGB_PIXEL *fg_f = fg->data;                                                \
+    ARGB_PIXEL pixval; \
+    INT t_w = fg->width-M < bg->width ? fg->width-M : bg->width;                                        \
+    INT t_h = fg->height-M < bg->height ? fg->height-M : bg->height;                                    \
+    INT x = 0, y = 0, ox = 0, oy = 0;                                                                 \
+    if (out_x < 0) { t_w -= -out_x; fg_f += -out_x; }                   \
+    if (out_y < 0) { t_h -= -out_y; fg_f += -out_y*fg->width; }          \
+    if (out_x > 0) { out_f += out_x; bg_f += out_x; ox = out_x;                                                \
+        if (out_x + t_w > out->width) t_w = out->width - out_x; }                                     \
+    if (out_y > 0) { out_f += out_y*out->width; bg_f += out_y*out->width; oy = out_y;                                     \
+        if (out_y + t_h > out->height) t_h = out->height - out_y; }
+
+#define PREAMBLE_OUT_BG_FG_P(M)                                                                          \
+    if (out->width != bg->width || out->height != bg->height)                                         \
+        return;                                                                                       \
+    if (fg->width != p->width || fg->height != p->height)                                         \
+        return;                                                                                       \
+    if (out_x >= out->width || out_y >= out->height || out_x+fg->width <= 0 || out_y+fg->height <= 0) \
+        return;                                                                                       \
+    ARGB_PIXEL *out_no_f = out->data, *out_f = out->data; \
+    ARGB_PIXEL *bg_no_f = bg->data, *bg_f = bg->data; \
+    ARGB_PIXEL *fg_f = fg->data, *p_f = p->data;                                                \
+    ARGB_PIXEL pixval; \
+    INT t_w = fg->width-M < bg->width ? fg->width-M : bg->width;                                        \
+    INT t_h = fg->height-M < bg->height ? fg->height-M : bg->height;                                    \
+    INT x = 0, y = 0, ox = 0, oy = 0;                                                                 \
+    if (out_x < 0) { t_w -= -out_x; fg_f += -out_x; p_f += -out_x; }                   \
+    if (out_y < 0) { t_h -= -out_y; fg_f += -out_y*fg->width; p_f += -out_y*p->width; }          \
+    if (out_x > 0) { out_f += out_x; bg_f += out_x; ox = out_x;                                                \
+        if (out_x + t_w > out->width) t_w = out->width - out_x; }                                     \
+    if (out_y > 0) { out_f += out_y*out->width; bg_f += out_y*out->width; oy = out_y;                                     \
+        if (out_y + t_h > out->height) t_h = out->height - out_y; }
+
+//out_no_f - output pointer for storing unfiltered (background only) data
+//out_f - output pointer for storing filtered (background x foreground) data
+//bg_no_f - input pointer for reading unfiltered background data
+//bg_f - input pointer for reading filtered background data
+//fg_f - input pointer for reading filtered foreground data
+//p_f - input pointer for reading filterint parameter data
+//ox, oy - filter target start coordinates in out/bg surface
+
+#define NEXT_Y_OUT_NO_F out_no_f += out->width;
+#define NEXT_Y_OUT_F out_f += out->width;
+#define NEXT_Y_BG_NO_F bg_no_f += bg->width;
+#define NEXT_Y_BG_F bg_f += bg->width;
+#define NEXT_Y_FG_F fg_f += fg->width;
+#define NEXT_Y_P_F p_f += p->width;
+
+void ARGB_MAP_green_gradient_global_copy(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *fg, GRADIENT *g, const INT p) {
+    PREAMBLE_OUT_FG(p);
     INT l00, l01, l10, dl;
 
     map_filter_dg->length = 511;
     DISCRETE_GRADIENT_from_GRADIENT(map_filter_dg, g);
 
-    if (t_h > in->height-p) t_h = in->height-p;
-    if (t_w > in->width-p) t_w = in->width-p;
-
     for(y = 0; y < oy; y++) {
         for(x = 0; x < out->width; x++) {
-            out_back_data[x] = map_filter_dg->pixval[0];
+            out_no_f[x] = map_filter_dg->pixval[0];
         }
-        NEXT_Y_OUT_BACK;
+        NEXT_Y_OUT_NO_F;
     }
 
     for(; y < oy + t_h; y++) {
         for(x = 0; x < ox; x++) {
-            out_back_data[x] = map_filter_dg->pixval[0];
+            out_no_f[x] = map_filter_dg->pixval[0];
         }
         for(x = 0; x < t_w; x++) {
-            l00 = ARGB_PIXEL_GREEN(in_data[x]);
-            l10 = ARGB_PIXEL_GREEN(in_data[x+p]);
-            l01 = ARGB_PIXEL_GREEN(in_data[x+p*in->width]);
-
+            l00 = ARGB_PIXEL_GREEN(fg_f[x]);
+            l10 = ARGB_PIXEL_GREEN(fg_f[x+p]);
+            l01 = ARGB_PIXEL_GREEN(fg_f[x+p*fg->width]);
             dl = l10 + l01 - 2*l00;
             if (dl < 0) dl = -dl;
-            out_data[x] = map_filter_dg->pixval[dl];
+            out_f[x] = map_filter_dg->pixval[dl];
         }
         for(x = ox + t_w; x < out->width; x++) {
-            out_back_data[x] = map_filter_dg->pixval[0];
+            out_no_f[x] = map_filter_dg->pixval[0];
         }
-        NEXT_Y_OUT;
-        NEXT_Y_OUT_BACK;
-        NEXT_Y_IN;
+        NEXT_Y_OUT_F;
+        NEXT_Y_FG_F;
+        NEXT_Y_OUT_NO_F;
     }
 
     for(; y < out->height; y++) {
         for(x = 0; x < out->width; x++) {
-            out_back_data[x] = map_filter_dg->pixval[0];
+            out_no_f[x] = map_filter_dg->pixval[0];
         }
-        NEXT_Y_OUT_BACK;
+        NEXT_Y_OUT_NO_F;
     }
 }
 
-void ARGB_MAP_green_gradient_global_blend(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *in, GRADIENT *g, const INT p) {
-    PREAMBLE_OUT_IN;
+void ARGB_MAP_green_gradient_global_blend(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *bg, ARGB_MAP *fg, GRADIENT *g, const INT p) {
+    PREAMBLE_OUT_BG_FG(p);
     INT l00, l01, l10, dl;
-    ARGB_PIXEL Ae, Rf, Gf, Bf, Rb, Gb, Bb, pixval;
+    ARGB_PIXEL Ae, Rf, Gf, Bf, Rb, Gb, Bb;
 
     map_filter_dg->length = 511;
     DISCRETE_GRADIENT_from_GRADIENT(map_filter_dg, g);
-    if (t_h > in->height-p) t_h = in->height-p;
-    if (t_w > in->width-p) t_w = in->width-p;
 
-    for(y = 0; y < t_h; y++) {
+    for(y = 0; y < oy; y++) {
+        for(x = 0; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
+        }
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
+    }
+
+    for(; y < oy + t_h; y++) {
+        for(x = 0; x < ox; x++) {
+            out_no_f[x] = bg_no_f[x];
+        }
         for(x = 0; x < t_w; x++) {
-            l00 = ARGB_PIXEL_GREEN(in_data[x]);
-            l10 = ARGB_PIXEL_GREEN(in_data[x+p]);
-            l01 = ARGB_PIXEL_GREEN(in_data[x+p*in->width]);
+            l00 = ARGB_PIXEL_GREEN(fg_f[x]);
+            l10 = ARGB_PIXEL_GREEN(fg_f[x+p]);
+            l01 = ARGB_PIXEL_GREEN(fg_f[x+p*fg->width]);
             dl = l10 + l01 - 2*l00;
             if (dl < 0) dl = -dl;
             pixval = map_filter_dg->pixval[dl];
@@ -137,15 +198,29 @@ void ARGB_MAP_green_gradient_global_blend(ARGB_MAP *out, INT out_x, INT out_y, A
                 Rf = (ARGB_PIXEL_RED(pixval)*Ae >> 8) << R_SHIFT;
                 Gf = (ARGB_PIXEL_GREEN(pixval)*Ae >> 8) << G_SHIFT;
                 Bf = (ARGB_PIXEL_BLUE(pixval)*Ae >> 8) << B_SHIFT;
-                pixval = out_data[x];
+                pixval = bg_f[x];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Ae) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Ae) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Ae) >> 8) << B_SHIFT;
-                out_data[x] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out_f[x] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
         }
-        NEXT_Y_OUT;
-        NEXT_Y_IN;
+        for(x = ox + t_w; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
+        }
+        NEXT_Y_OUT_F;
+        NEXT_Y_BG_F;
+        NEXT_Y_FG_F;
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
+    }
+
+    for(; y < out->height; y++) {
+        for(x = 0; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
+        }
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
     }
 }
 
