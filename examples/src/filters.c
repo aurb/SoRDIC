@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
         .roll = 0.0,    .fov = 90.0,    .near_z = 0.5,    .far_z = 15.0});
 
     // Create object for the example
-    const FLOAT TOR_PHI = 5.0; //outer diameter of toroid
+    const FLOAT TOR_PHI = 4.5; //outer diameter of toroid
     container = obj_3d_container(
         obj_3d_toroid(QUAD, 0.8*(TOR_PHI/2), 0.2*(TOR_PHI/2), 150, 30, 5, 1), 0);
     scene_3d_add_root_container(scene, container);
@@ -135,6 +135,8 @@ int main(int argc, char *argv[])
     while (!quit_flag)
     {
         rotation_t = engine_run_stats().time;
+        INT cx = display_buffer()->width*(0.3*cos(rotation_t*TWOPI/5.0));
+        INT cy = display_buffer()->height*(0.3*sin(rotation_t*TWOPI/5.0));
 
         // rotate and perspective transform the cube
         obj_3d_container_set_transform(
@@ -155,14 +157,14 @@ int main(int argc, char *argv[])
             scene->render_buf = tx_render_buffer;
             RENDER_BUFFER_zero(tx_render_buffer);
             scene_3d_render(scene);
-            ARGB_MAP_green_gradient_global_copy(display_buffer()->map, 0, 0, tx_render_buffer->map, &edge_copy_gradient, MAX_EDGE_WIDTH);
+            ARGB_MAP_green_gradient_global_copy(display_buffer()->map, cx, cy, tx_render_buffer->map, &edge_copy_gradient, MAX_EDGE_WIDTH);
         }
         else if (mode == BLEND_FILTER_1) {
             scene->render_buf = tx_render_buffer;
             RENDER_BUFFER_zero(tx_render_buffer);
             scene_3d_render(scene);
             RENDER_BUFFER_ARGB_MAP_copy(display_buffer(), background_map);
-            ARGB_MAP_green_gradient_global_blend(display_buffer()->map, 0, 0, background_map, tx_render_buffer->map, &edge_blend_gradient, MAX_EDGE_WIDTH);
+            ARGB_MAP_green_gradient_global_blend(display_buffer()->map, cx, cy, background_map, tx_render_buffer->map, &edge_blend_gradient, MAX_EDGE_WIDTH);
         }
         else if (mode == COPY_FILTER_2) {
             scene->render_buf = tx_render_buffer;

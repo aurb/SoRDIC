@@ -36,7 +36,6 @@ void map_filters_cleanup() {
         return;                                                                                       \
     ARGB_PIXEL *out_no_f = out->data, *out_f = out->data; \
     ARGB_PIXEL *fg_f = fg->data;                                                \
-    ARGB_PIXEL pixval; \
     INT t_w = fg->width-M;                                        \
     INT t_h = fg->height-M;                                    \
     INT x = 0, y = 0, ox = 0, oy = 0;                                                                 \
@@ -54,7 +53,6 @@ void map_filters_cleanup() {
         return;                                                                                       \
     ARGB_PIXEL *out_no_f = out->data, *out_f = out->data; \
     ARGB_PIXEL *fg_f = fg->data, *p_f = p->data;                                                \
-    ARGB_PIXEL pixval; \
     INT t_w = fg->width-M;                                        \
     INT t_h = fg->height-M;                                    \
     INT x = 0, y = 0, ox = 0, oy = 0;                                                                 \
@@ -77,7 +75,6 @@ void map_filters_cleanup() {
     ARGB_PIXEL *out_no_f = out->data, *out_f = out->data; \
     ARGB_PIXEL *bg_no_f = bg->data, *bg_f = bg->data; \
     ARGB_PIXEL *fg_f = fg->data;                                                \
-    ARGB_PIXEL pixval; \
     INT t_w = fg->width-M < bg->width ? fg->width-M : bg->width;                                        \
     INT t_h = fg->height-M < bg->height ? fg->height-M : bg->height;                                    \
     INT x = 0, y = 0, ox = 0, oy = 0;                                                                 \
@@ -98,7 +95,6 @@ void map_filters_cleanup() {
     ARGB_PIXEL *out_no_f = out->data, *out_f = out->data; \
     ARGB_PIXEL *bg_no_f = bg->data, *bg_f = bg->data; \
     ARGB_PIXEL *fg_f = fg->data, *p_f = p->data;                                                \
-    ARGB_PIXEL pixval; \
     INT t_w = fg->width-M < bg->width ? fg->width-M : bg->width;                                        \
     INT t_h = fg->height-M < bg->height ? fg->height-M : bg->height;                                    \
     INT x = 0, y = 0, ox = 0, oy = 0;                                                                 \
@@ -169,7 +165,7 @@ void ARGB_MAP_green_gradient_global_copy(ARGB_MAP *out, INT out_x, INT out_y, AR
 void ARGB_MAP_green_gradient_global_blend(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *bg, ARGB_MAP *fg, GRADIENT *g, const INT p) {
     PREAMBLE_OUT_BG_FG(p);
     INT l00, l01, l10, dl;
-    ARGB_PIXEL Ae, Rf, Gf, Bf, Rb, Gb, Bb;
+    ARGB_PIXEL Ae, Rf, Gf, Bf, Rb, Gb, Bb, pixval;
 
     map_filter_dg->length = 511;
     DISCRETE_GRADIENT_from_GRADIENT(map_filter_dg, g);
