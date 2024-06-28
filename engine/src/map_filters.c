@@ -294,63 +294,75 @@ void ARGB_MAP_green_gradient_per_pixel_blend(ARGB_MAP *out, INT out_x, INT out_y
     }
 }
 
-void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, ARGB_MAP *in, const INT p) {
-    INT x = 0, y = 0, offs = 0;
+void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *bg, ARGB_MAP *fg, const INT p) {
+    PREAMBLE_OUT_BG_FG(0);
     ARGB_PIXEL pixval;
     ARGB_PIXEL r, g, b, rb, gb, bb, mul_f = (1<<FRACT_SHIFT)/p;
     const INT lp = (p-1)/2; //left half of p
     const INT rp = p/2; //right half of p
 
-    if (p < 1 || out->height != in->height || out->width != in->width) {
-        return;
-    }
-    else if (p == 1) {
-        ARGB_MAP_copy(out, in);
+    if (p == 1) {
+        ARGB_MAP_copy(out, fg);
         return;
     }
 
-    for(y = 0, offs = 0; y < in->height; y++) {
-        r = g = b = 0;
-        for(x = 0; x < rp; x++) {
-            pixval = in->data[offs+x];
-            r += ARGB_PIXEL_RED(pixval);
-            g += ARGB_PIXEL_GREEN(pixval);
-            b += ARGB_PIXEL_BLUE(pixval);
+    for(y = 0; y < oy+1; y++) {
+        for(x = 0; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
         }
-        for(x = 0; x < lp+1; x++, offs++) {
-            pixval = in->data[offs+rp];
-            r += ARGB_PIXEL_RED(pixval);
-            g += ARGB_PIXEL_GREEN(pixval);
-            b += ARGB_PIXEL_BLUE(pixval);
-            rb = (r*mul_f >> FRACT_SHIFT) << R_SHIFT;
-            gb = (g*mul_f >> FRACT_SHIFT) << G_SHIFT;
-            bb = (b*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            out->data[offs] = rb | gb | bb;
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
+    }
+
+    //omit first line from fg
+    NEXT_Y_OUT_F;
+    NEXT_Y_BG_F;
+    NEXT_Y_FG_F;
+    //fill color accumulator with initial sum for the first blurred pixel
+    r = g = b = 0;
+    for(x = -(lp+1); x < rp; x++) {
+        pixval = fg_f[x];
+        r += ARGB_PIXEL_RED(pixval);
+        g += ARGB_PIXEL_GREEN(pixval);
+        b += ARGB_PIXEL_BLUE(pixval);
+    }
+
+    //this loop does not process first and last lines from fg
+    //in order to "overlap" blur at left and right edges
+    for(; y < oy + t_h-1; y++) {
+        for(x = 0; x < ox; x++) {
+            out_no_f[x] = bg_no_f[x];
         }
-        for(x = lp+1; x < in->width-rp; x++, offs++) {
-            pixval = in->data[offs+rp];
+        for(x = 0; x < fg->width; x++) {
+            pixval = fg_f[x+rp];
             r += ARGB_PIXEL_RED(pixval);
             g += ARGB_PIXEL_GREEN(pixval);
             b += ARGB_PIXEL_BLUE(pixval);
-            pixval = in->data[offs-(lp+1)];
+            pixval = fg_f[x-(lp+1)];
             r -= ARGB_PIXEL_RED(pixval);
             g -= ARGB_PIXEL_GREEN(pixval);
             b -= ARGB_PIXEL_BLUE(pixval);
             rb = (r*mul_f >> FRACT_SHIFT) << R_SHIFT;
             gb = (g*mul_f >> FRACT_SHIFT) << G_SHIFT;
             bb = (b*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            out->data[offs] = rb | gb | bb;
+            out_f[x] = rb | gb | bb;
         }
-        for(x = in->width-rp; x < in->width; x++, offs++) {
-            pixval = in->data[offs-(lp+1)];
-            r -= ARGB_PIXEL_RED(pixval);
-            g -= ARGB_PIXEL_GREEN(pixval);
-            b -= ARGB_PIXEL_BLUE(pixval);
-            rb = (r*mul_f >> FRACT_SHIFT) << R_SHIFT;
-            gb = (g*mul_f >> FRACT_SHIFT) << G_SHIFT;
-            bb = (b*mul_f >> FRACT_SHIFT) << B_SHIFT;
-            out->data[offs] = rb | gb | bb;
+        for(x = ox + t_w; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
         }
+        NEXT_Y_OUT_F;
+        NEXT_Y_BG_F;
+        NEXT_Y_FG_F;
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
+    }
+
+    for(; y < out->height; y++) {
+        for(x = 0; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
+        }
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
     }
 }
 
