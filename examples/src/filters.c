@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
             scene->render_buf = tx_render_buffer;
             RENDER_BUFFER_zero(tx_render_buffer);
             scene_3d_render(scene);
-            ARGB_MAP_blur_nx1_global_blend(display_buffer()->map, background_map, tx_render_buffer->map, 100);
+            ARGB_MAP_blur_nx1_global_blend(display_buffer()->map, cx, cy, background_map, tx_render_buffer->map, 100);
         }
         else if (mode == COPY_FILTER_5) {
             scene->render_buf = tx_render_buffer;

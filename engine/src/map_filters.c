@@ -362,8 +362,8 @@ void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, INT out_x, INT out_y, COLOR *b
     }
 }
 
-void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, const INT p) {
-    INT x = 0, y = 0, offs = 0;
+void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *bg, ARGB_MAP *fg, const INT p) {
+    PREAMBLE_OUT_BG_FG(0);
     ARGB_PIXEL pixval;
     ARGB_PIXEL a, r, g, b, Aavg, Rf, Gf, Bf, Rb, Gb, Bb, mul_f[256];
     ARGB_PIXEL mfa; //multiplication factor for alpha channel (inverse of blur distance)
@@ -371,10 +371,8 @@ void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
     const INT lp = (p-1)/2; //left half of p
     const INT rp = p/2; //right half of p
 
-    if (out->height != bg->height || out->width != bg->width || out->height != fg->height || out->width != fg->width) {
-        return;
-    }
-    else if (p == 1) {
+    if (p == 1) {
+        ARGB_MAP_copy(out, bg);
         ARGB_MAP_blend_mul_global(out, 0, 0, fg, 1.0);
         return;
     }
@@ -384,46 +382,41 @@ void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
     }
     mfa = mul_f[p];
 
-    for(y = 0, offs = 0; y < fg->height; y++) {
-        a = r = g = b = 0;
-        for(x = 0; x < rp; x++) {
-            pixval = fg->data[offs+x];
-            a += ARGB_PIXEL_ALPHA(pixval);
-            r += ARGB_PIXEL_RED(pixval);
-            g += ARGB_PIXEL_GREEN(pixval);
-            b += ARGB_PIXEL_BLUE(pixval);
+    for(y = 0; y < oy+1; y++) {
+        for(x = 0; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
         }
-        for(x = 0; x < lp+1; x++, offs++) {
-            pixval = fg->data[offs+rp];
-            a += ARGB_PIXEL_ALPHA(pixval);
-            r += ARGB_PIXEL_RED(pixval);
-            g += ARGB_PIXEL_GREEN(pixval);
-            b += ARGB_PIXEL_BLUE(pixval);
-            Aavg = a*mfa >> FRACT_SHIFT;
-            if (Aavg > 0) {
-                //inverse of total alpha along blur section
-                //This corresponds to number of "on" pixels in foreground blur sample
-                mfrgb = mul_f[(a >> 8) + 1];
-                Rf = (r*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
-                Gf = (g*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
-                Bf = (b*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = bg->data[offs];
-                Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
-                Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
-                Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
-            }
-            else {
-                out->data[offs] = bg->data[offs];
-            }
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
+    }
+
+    //omit first line from fg and bg
+    NEXT_Y_OUT_F;
+    NEXT_Y_FG_F;
+    NEXT_Y_BG_F;
+    //fill color accumulators with initial sum for the first blurred pixel
+    a = r = g = b = 0;
+    for(x = -(lp+1); x < rp; x++) {
+        pixval = fg_f[x];
+        a += ARGB_PIXEL_ALPHA(pixval);
+        r += ARGB_PIXEL_RED(pixval);
+        g += ARGB_PIXEL_GREEN(pixval);
+        b += ARGB_PIXEL_BLUE(pixval);
+    }
+
+    //this loop does not process first and last lines from fg
+    //in order to "overlap" blur at left and right edges
+    for(; y < oy + t_h-1; y++) {
+        for(x = 0; x < ox; x++) {
+            out_no_f[x] = bg_no_f[x];
         }
-        for(x = lp+1; x < fg->width-rp; x++, offs++) {
-            pixval = fg->data[offs+rp];
+        for(x = 0; x < fg->width; x++) {
+            pixval = fg_f[x+rp];
             a += ARGB_PIXEL_ALPHA(pixval);
             r += ARGB_PIXEL_RED(pixval);
             g += ARGB_PIXEL_GREEN(pixval);
             b += ARGB_PIXEL_BLUE(pixval);
-            pixval = fg->data[offs-(lp+1)];
+            pixval = fg_f[x-(lp+1)];
             a -= ARGB_PIXEL_ALPHA(pixval);
             r -= ARGB_PIXEL_RED(pixval);
             g -= ARGB_PIXEL_GREEN(pixval);
@@ -436,40 +429,32 @@ void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, c
                 Rf = (r*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
                 Gf = (g*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
                 Bf = (b*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = bg->data[offs];
+                pixval = bg_f[x];
                 Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
                 Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
                 Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
+                out_f[x] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
             }
             else {
-                out->data[offs] = bg->data[offs];
+                out_f[x] = bg_f[x];
             }
         }
-        for(x = fg->width-rp; x < fg->width; x++, offs++) {
-            pixval = fg->data[offs-(lp+1)];
-            a -= ARGB_PIXEL_ALPHA(pixval);
-            r -= ARGB_PIXEL_RED(pixval);
-            g -= ARGB_PIXEL_GREEN(pixval);
-            b -= ARGB_PIXEL_BLUE(pixval);
-            Aavg = a*mfa >> FRACT_SHIFT;
-            if (Aavg > 0) {
-                //inverse of total alpha along blur section
-                //This corresponds to number of "on" pixels in foreground blur sample
-                mfrgb = mul_f[(a >> 8) + 1];
-                Rf = (r*mfrgb*Aavg >> (FRACT_SHIFT+8)) << R_SHIFT;
-                Gf = (g*mfrgb*Aavg >> (FRACT_SHIFT+8)) << G_SHIFT;
-                Bf = (b*mfrgb*Aavg >> (FRACT_SHIFT+8)) << B_SHIFT;
-                pixval = bg->data[offs];
-                Rb = (ARGB_PIXEL_RED(pixval)*(255-Aavg) >> 8) << R_SHIFT;
-                Gb = (ARGB_PIXEL_GREEN(pixval)*(255-Aavg) >> 8) << G_SHIFT;
-                Bb = (ARGB_PIXEL_BLUE(pixval)*(255-Aavg) >> 8) << B_SHIFT;
-                out->data[offs] = (Rb+Rf) | (Gb+Gf) | (Bb+Bf);
-            }
-            else {
-                out->data[offs] = bg->data[offs];
-            }
+        for(x = ox + t_w; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
         }
+        NEXT_Y_OUT_F;
+        NEXT_Y_FG_F;
+        NEXT_Y_BG_F;
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
+    }
+
+    for(; y < out->height; y++) {
+        for(x = 0; x < out->width; x++) {
+            out_no_f[x] = bg_no_f[x];
+        }
+        NEXT_Y_OUT_NO_F;
+        NEXT_Y_BG_NO_F;
     }
 }
 

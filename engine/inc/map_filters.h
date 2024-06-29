@@ -31,8 +31,7 @@ void ARGB_MAP_green_gradient_per_pixel_copy(ARGB_MAP *out, INT out_x, INT out_y,
 void ARGB_MAP_green_gradient_per_pixel_blend(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *bg, ARGB_MAP *fg, GRADIENT *g, ARGB_MAP *p);
 
 void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, INT out_x, INT out_y, COLOR *bg, ARGB_MAP *fg, const INT p);
-//void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, ARGB_MAP *in, const INT p);
-void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, const INT p);
+void ARGB_MAP_blur_nx1_global_blend(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *bg, ARGB_MAP *fg, const INT p);
 
 void ARGB_MAP_blur_nx1_per_pixel_copy(ARGB_MAP *out, ARGB_MAP *in, ARGB_MAP *p);
 void ARGB_MAP_blur_nx1_per_pixel_blend(ARGB_MAP *out, ARGB_MAP *bg, ARGB_MAP *fg, ARGB_MAP *p);
