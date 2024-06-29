@@ -294,9 +294,9 @@ void ARGB_MAP_green_gradient_per_pixel_blend(ARGB_MAP *out, INT out_x, INT out_y
     }
 }
 
-void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP *bg, ARGB_MAP *fg, const INT p) {
-    PREAMBLE_OUT_BG_FG(0);
-    ARGB_PIXEL pixval;
+void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, INT out_x, INT out_y, COLOR *bg, ARGB_MAP *fg, const INT p) {
+    PREAMBLE_OUT_FG(0);
+    ARGB_PIXEL pixval, bg_pixval;
     ARGB_PIXEL r, g, b, rb, gb, bb, mul_f = (1<<FRACT_SHIFT)/p;
     const INT lp = (p-1)/2; //left half of p
     const INT rp = p/2; //right half of p
@@ -305,18 +305,17 @@ void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP
         ARGB_MAP_copy(out, fg);
         return;
     }
+    bg_pixval = COLOR_to_ARGB_PIXEL(bg);
 
     for(y = 0; y < oy+1; y++) {
         for(x = 0; x < out->width; x++) {
-            out_no_f[x] = bg_no_f[x];
+            out_no_f[x] = bg_pixval;
         }
         NEXT_Y_OUT_NO_F;
-        NEXT_Y_BG_NO_F;
     }
 
     //omit first line from fg
     NEXT_Y_OUT_F;
-    NEXT_Y_BG_F;
     NEXT_Y_FG_F;
     //fill color accumulator with initial sum for the first blurred pixel
     r = g = b = 0;
@@ -331,7 +330,7 @@ void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP
     //in order to "overlap" blur at left and right edges
     for(; y < oy + t_h-1; y++) {
         for(x = 0; x < ox; x++) {
-            out_no_f[x] = bg_no_f[x];
+            out_no_f[x] = bg_pixval;
         }
         for(x = 0; x < fg->width; x++) {
             pixval = fg_f[x+rp];
@@ -348,21 +347,18 @@ void ARGB_MAP_blur_nx1_global_copy(ARGB_MAP *out, INT out_x, INT out_y, ARGB_MAP
             out_f[x] = rb | gb | bb;
         }
         for(x = ox + t_w; x < out->width; x++) {
-            out_no_f[x] = bg_no_f[x];
+            out_no_f[x] = bg_pixval;
         }
         NEXT_Y_OUT_F;
-        NEXT_Y_BG_F;
         NEXT_Y_FG_F;
         NEXT_Y_OUT_NO_F;
-        NEXT_Y_BG_NO_F;
     }
 
     for(; y < out->height; y++) {
         for(x = 0; x < out->width; x++) {
-            out_no_f[x] = bg_no_f[x];
+            out_no_f[x] = bg_pixval;
         }
         NEXT_Y_OUT_NO_F;
-        NEXT_Y_BG_NO_F;
     }
 }
 
